@@ -25,3 +25,17 @@ This repository contains professional MetaTrader 5 Expert Advisors (EAs) impleme
 ## Risk Disclaimer
 
 High-profit strategies come with higher risks. Never risk more than 1-2% of your account balance on a single trade. Always test thoroughly on a demo account before trading live.
+
+## SaveEA – XAUUSD M1 Tick-Momentum Scalper
+
+File: `Experts/SaveEA.mq5`
+
+A fast scalper built for gold (XAUUSD) on the M1 chart:
+
+- **Entry**: opens a buy or sell when price moves at least `InpTriggerPoints` within `InpMomentumSeconds` and is still near the high or low of that move.
+- **Exit**: places a tight initial stop-loss, moves it to break-even, then trails it behind price. An optional take-profit and a maximum holding time are available.
+- **Sizing**: fixed lots (0.01 by default) or a percentage of equity at risk per trade.
+- **Protection**: spread filter, trading-hours window, cooldown between entries, maximum open positions, and daily loss and profit limits.
+- Each trade carries its own magic number, so the EA leaves manual trades and other EAs alone.
+
+Usage: copy `SaveEA.mq5` to `MQL5/Experts/`, compile it in MetaEditor, and attach it to an XAUUSD M1 chart. Before trading live, backtest with **"Every tick based on real ticks"**. Results from the other modelling modes are unreliable for tick scalpers, and small accounts ($3–$10) will often be too small for broker margin and stop-out rules.
