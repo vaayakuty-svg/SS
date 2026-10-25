@@ -59,6 +59,7 @@ int      g_head  = 0;
 int      g_count = 0;
 
 datetime g_lastEntry     = 0;
+datetime g_lastSpreadLog = 0;
 datetime g_dayStart      = 0;
 double   g_dayStartEquity = 0.0;
 bool     g_dayHalted     = false;
@@ -96,7 +97,14 @@ void OnTick()
 
    long spread = (long)MathRound((tick.ask - tick.bid) / _Point);
    if(spread > InpMaxSpreadPoints)
+     {
+      if(tick.time - g_lastSpreadLog >= 300)
+        {
+         PrintFormat("SaveEA: spread %d > InpMaxSpreadPoints %d, not trading", spread, InpMaxSpreadPoints);
+         g_lastSpreadLog = tick.time;
+        }
       return;
+     }
    if(tick.time - g_lastEntry < InpCooldownSeconds)
       return;
    if(CountPositions() >= InpMaxPositions)

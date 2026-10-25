@@ -39,3 +39,7 @@ A fast scalper built for gold (XAUUSD) on the M1 chart:
 - Each trade carries its own magic number, so the EA leaves manual trades and other EAs alone.
 
 Usage: copy `SaveEA.mq5` to `MQL5/Experts/`, compile it in MetaEditor, and attach it to an XAUUSD M1 chart. Before trading live, backtest with **"Every tick based on real ticks"**. Results from the other modelling modes are unreliable for tick scalpers, and small accounts ($3–$10) will often be too small for broker margin and stop-out rules.
+
+### Exness Standard preset
+
+`Presets/SaveEA_Exness_Standard.set` adjusts SaveEA for an Exness Standard account (symbol `XAUUSDm`, no commission, wider gold spread). To load it, open the EA's **Inputs** tab, click **Load**, and pick the file. Before using it, check the gold spread in Market Watch and set `InpMaxSpreadPoints` a bit above it. With a 700-point stop, each 0.01-lot loss is about $7, so on a $10–$20 balance use a Standard Cent account or a demo instead.
