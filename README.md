@@ -25,3 +25,17 @@ This repository contains professional MetaTrader 5 Expert Advisors (EAs) impleme
 ## Risk Disclaimer
 
 High-profit strategies come with higher risks. Never risk more than 1-2% of your account balance on a single trade. Always test thoroughly on a demo account before trading live.
+
+## Shards of Veyra (open world game)
+
+`game/index.html` is a self-contained 3D open world game that runs in the browser (Three.js, loaded from a CDN).
+
+- A procedurally generated island with beaches, forests, snowy peaks, sea, and standing-stone circles
+- Third-person explorer with walking, running (stamina), jumping and swimming
+- Deer that wander, graze and flee when you get close
+- A six-minute day/night cycle with sun, moon and stars
+- Twelve crystal shards to find, marked by pillars of light, a compass, a minimap and a full island map (M)
+- Keyboard and mouse on desktop; on-screen joystick and buttons on phones
+- Progress is saved in the browser
+
+Open `game/index.html` in a modern browser to play.
