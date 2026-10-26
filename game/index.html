@@ -79,6 +79,10 @@
   .tbtn.corner { position: fixed; z-index: 7; right: max(16px, env(safe-area-inset-right, 0px)); width: auto; height: auto; padding: 6px 12px; border-radius: 4px; pointer-events: auto; }
   #menuBtn { top: calc(12px + env(safe-area-inset-top, 0px)); }
   #mapBtn { top: calc(52px + env(safe-area-inset-top, 0px)); }
+  #jobBtn { top: calc(92px + env(safe-area-inset-top, 0px)); }
+  #droneBtn { top: calc(132px + env(safe-area-inset-top, 0px)); }
+  #jobChip { max-width: min(380px, 62vw); white-space: normal; line-height: 1.35; font-size: 13px; color: var(--ink); border-color: rgba(36,214,199,.5); }
+  #cash { color: #9fe37a; font-weight: 600; }
 
   @media (max-width: 620px) {
     #compass { display: none; }
@@ -97,6 +101,8 @@
   <div class="chip"><span class="tape"></span><span class="lbl">Tapes</span><span id="tapeCount">0 / 12</span></div>
   <div class="chip"><span class="lbl" id="dayLbl">Day 1</span><span id="clock">16:30</span></div>
   <div class="chip" id="regionChip">Neon Bay</div>
+  <div class="chip"><span class="lbl">Cash</span><span id="cash">$0</span></div>
+  <div class="chip" id="jobChip" hidden></div>
 </div>
 <div class="hud" id="compass"><canvas id="compassCv" width="420" height="30"></canvas></div>
 <div class="hud" id="hud-br">
@@ -118,6 +124,8 @@
   </div>
   <button class="tbtn corner" id="menuBtn" type="button">Journal</button>
   <button class="tbtn corner" id="mapBtn" type="button">Map</button>
+  <button class="tbtn corner" id="jobBtn" type="button">Job</button>
+  <button class="tbtn corner" id="droneBtn" type="button">Drone</button>
 </div>
 
 <div id="bigmap" hidden><canvas id="bigmapCv" width="680" height="680"></canvas></div>
@@ -131,8 +139,11 @@
       <kbd>W A S D</kbd><span>Walk, or drive and steer</span>
       <kbd>Shift</kbd><span>Run (uses stamina)</span>
       <kbd>Space</kbd><span>Jump, or handbrake</span>
-      <kbd>E</kbd><span>Get in or out of a parked car</span>
-      <kbd>R</kbd><span>Car radio on or off</span>
+      <kbd>E</kbd><span>Get in or out of a parked car or the seaplane</span>
+      <kbd>J</kbd><span>Take a job: taxi fares in a car, courier runs on foot</span>
+      <kbd>Q</kbd><span>Launch or recall the drone (Space up, Shift down)</span>
+      <kbd>Plane</kbd><span>W/S throttle, A/D turn, Space or ↓ climb, Shift or ↑ dive</span>
+      <kbd>R</kbd><span>Radio on or off</span>
       <kbd>Mouse</kbd><span>Look around (click the world to capture the mouse)</span>
       <kbd>M</kbd><span>State map</span>
       <kbd>Esc</kbd><span>Open this journal</span>
@@ -140,7 +151,8 @@
     <div class="keys" id="keysTouch" hidden>
       <kbd>Left stick</kbd><span>Walk, or drive and steer</span>
       <kbd>Drag right side</kbd><span>Look around</span>
-      <kbd>Drive</kbd><span>Appears next to a parked car</span>
+      <kbd>Drive · Fly</kbd><span>Appear next to a parked car or the seaplane</span>
+      <kbd>Job · Drone</kbd><span>Buttons at the top right</span>
       <kbd>Run · Jump</kbd><span>Buttons on the right (Jump brakes in a car)</span>
       <kbd>Pinch</kbd><span>Zoom the camera</span>
     </div>
@@ -148,7 +160,7 @@
       <button class="btn" id="playBtn" type="button">Hit the road</button>
       <button class="btn ghost" id="resetBtn" type="button">Start over</button>
     </div>
-    <p class="lore" id="loreLine">Neon Bay glows after dark. Gators sun themselves in the Sawgrass Glades, flamingos wade the shallows, and Highway 1 hops the Coral Keys on long bridges. A day lasts eight minutes.</p>
+    <p class="lore" id="loreLine">Neon Bay glows after dark. Gators sun themselves in the Sawgrass Glades, flamingos wade the shallows, and Highway 1 hops the Coral Keys on long bridges. A seaplane waits at the Neon Bay dock. A day lasts eight minutes.</p>
   </div>
 </div>
 
@@ -276,9 +288,11 @@ function roadAt(x, z) {
   }
   return best;
 }
+const platforms = [];   // docks: {x0, x1, z0, z1, y}
+function platformAt(x, z) { for (const p of platforms) if (x > p.x0 && x < p.x1 && z > p.z0 && z < p.z1) return p.y; return -Infinity; }
 // Walkable/driveable height. refY lets something under a bridge stay under it.
 function surfaceAt(x, z, refY) {
-  const g = groundAt(x, z), r = roadAt(x, z);
+  const g = Math.max(groundAt(x, z), platformAt(x, z)), r = roadAt(x, z);
   if (r && r.y > g && (refY === undefined || refY > r.y - 2.5)) return r.y;
   return g;
 }
@@ -674,7 +688,7 @@ function buildHuman() {
   return { g, legL, legR, armL, armR, jacket };
 }
 const hero = buildHuman(); scene.add(hero.g);
-const player = { x: 0, y: 0, z: 0, vy: 0, yaw: 0, onGround: true, stamina: 1, swimming: false, step: 0, speed: 0, car: null };
+const player = { x: 0, y: 0, z: 0, vy: 0, yaw: 0, onGround: true, stamina: 1, swimming: false, step: 0, speed: 0, car: null, plane: null };
 
 /* ================= Cars ================= */
 const CAR_COLORS = [0xff4f91, 0x24d6c7, 0xf6f2ea, 0xf6a623, 0x2b2b38, 0xd2394a, 0x6b8cff, 0xb36bff, 0x9fe37a];
@@ -753,7 +767,7 @@ function updateTraffic(dt) {
       const dx = o.x - c.x, dz = o.z - c.z, ahead = dx * fx + dz * fz, lat = Math.abs(dx * -fz + dz * fx);
       if (ahead > 0 && ahead < 16 && lat < 2.6) target = Math.min(target, Math.max(0, (ahead - 6) * 1.5));
     }
-    if (!player.car) { const dx = me.x - c.x, dz = me.z - c.z, ahead = dx * fx + dz * fz, lat = Math.abs(dx * -fz + dz * fx); if (ahead > 0 && ahead < 16 && lat < 2.6) target = Math.min(target, Math.max(0, (ahead - 6) * 1.5)); }
+    if (!player.car && !player.plane) { const dx = me.x - c.x, dz = me.z - c.z, ahead = dx * fx + dz * fz, lat = Math.abs(dx * -fz + dz * fx); if (ahead > 0 && ahead < 16 && lat < 2.6) target = Math.min(target, Math.max(0, (ahead - 6) * 1.5)); }
     c.speed += (target - c.speed) * Math.min(1, dt * (target < c.speed ? 4 : 1));
     c.s += c.speed * c.dir * dt;
     if (c.s > c.road.len - 8) { c.s = c.road.len - 8; c.dir = -1; }
@@ -839,11 +853,285 @@ function updateAnimals(dt) {
   }
 }
 
+/* ================= Seaplane ================= */
+function buildPlane() {
+  const g = new THREE.Group(), white = flat(0xf6f2ea, { roughness: .5 }), teal = flat(0x24d6c7, { roughness: .5 }), glass = flat(0x2a3440, { roughness: .2, metalness: .5 }), dark = flat(0x2a2a33);
+  const part = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
+  part(new THREE.BoxGeometry(1.4, 1.4, 6.5), white, 0, 2.6, 0);
+  part(new THREE.BoxGeometry(1.2, 1.1, 1), teal, 0, 2.6, 3.6);
+  part(new THREE.BoxGeometry(1.2, .6, 1.6), glass, 0, 3.5, 1.4);
+  part(new THREE.BoxGeometry(11, .18, 1.6), white, 0, 3.4, 1);
+  part(new THREE.BoxGeometry(11.05, .2, .4), teal, 0, 3.42, 1.55);
+  part(new THREE.BoxGeometry(.15, 1.6, 1.2), teal, 0, 3.7, -2.9);
+  part(new THREE.BoxGeometry(3.6, .12, 1), white, 0, 2.9, -2.9);
+  for (const s of [-1.5, 1.5]) {
+    part(new THREE.BoxGeometry(.6, .5, 5.5), teal, s, .35, .3);
+    part(new THREE.BoxGeometry(.12, 1.7, .12), dark, s * .8, 1.3, 1.4);
+    part(new THREE.BoxGeometry(.12, 1.7, .12), dark, s * .8, 1.3, -.8);
+  }
+  const prop = new THREE.Group(); prop.position.set(0, 2.6, 4.15); g.add(prop);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(.18, 2.4, .08), dark); prop.add(blade); const blade2 = blade.clone(); blade2.rotation.z = Math.PI / 2; prop.add(blade2);
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  g.rotation.order = "YXZ"; scene.add(g);
+  return { g, prop };
+}
+const planeFloor = (x, z) => Math.max(groundAt(x, z), WATER - .05);
+let seaplane;
+(function buildDock() {
+  const z = -40, coast = eastCoast(z), x0 = coast - 14;
+  let x1 = x0; while (x1 < coast + 70 && groundAt(x1, z) > -2.4) x1 += 2;
+  x1 += 4;
+  const y = 1;
+  const dock = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, .4, 4), flat(0x9b7653)); dock.position.set((x0 + x1) / 2, y - .2, z); dock.castShadow = dock.receiveShadow = true; scene.add(dock);
+  const postGeo = new THREE.CylinderGeometry(.22, .22, 8, 6), postMat = flat(0x6e5236);
+  for (let x = x0 + 2; x < x1; x += 6) for (const s of [-1.8, 1.8]) { const p = new THREE.Mesh(postGeo, postMat); p.position.set(x, y - 4, z + s); scene.add(p); }
+  platforms.push({ x0, x1, z0: z - 2, z1: z + 2, y });
+  const m = buildPlane(), hx = x1 + 6, hz = z + 7;
+  seaplane = Object.assign(m, { x: hx, y: planeFloor(hx, hz), z: hz, yaw: Math.PI / 2, pitch: 0, roll: 0, speed: 0, throttle: 0, home: { x: hx, z: hz, yaw: Math.PI / 2 } });
+  placePlane(seaplane);
+})();
+function placePlane(P) { P.g.position.set(P.x, P.y, P.z); P.g.rotation.set(-P.pitch, P.yaw, P.roll); }
+function resetPlane(P) { Object.assign(P, { x: P.home.x, z: P.home.z, yaw: P.home.yaw, pitch: 0, roll: 0, speed: 0, throttle: 0 }); P.y = planeFloor(P.x, P.z); placePlane(P); }
+function buildingHit(x, z, y, pad) { for (const b of buildings) if (y < CITY.h - .2 + b.height + pad && x > b.x0 - pad && x < b.x1 + pad && z > b.z0 - pad && z < b.z1 + pad) return b; return null; }
+const effects = [];
+function boom(x, y, z) {
+  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0xffa040, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false }));
+  m.position.set(x, y + 1, z); scene.add(m); effects.push({ m, t: 0 });
+}
+function updateEffects(dt) {
+  for (let i = effects.length - 1; i >= 0; i--) { const e = effects[i]; e.t += dt; e.m.scale.setScalar(1 + e.t * 14); e.m.material.opacity = Math.max(0, .9 - e.t * .9); if (e.t > 1) { scene.remove(e.m); e.m.geometry.dispose(); e.m.material.dispose(); effects.splice(i, 1); } }
+}
+function updatePlane(dt) {
+  const P = player.plane;
+  let thrIn = 0, turn = 0, pitchIn = 0;
+  if (keys.KeyW) thrIn += 1; if (keys.KeyS) thrIn -= 1;
+  if (keys.KeyA || keys.ArrowLeft) turn += 1; if (keys.KeyD || keys.ArrowRight) turn -= 1;
+  if (keys.ArrowDown || keys.Space) pitchIn += 1; if (keys.ArrowUp || keys.ShiftLeft || keys.ShiftRight) pitchIn -= 1;
+  if (stick.id !== null) { turn -= stick.x; pitchIn += stick.y; }
+  if (touchBrake) pitchIn += 1;
+  turn = clamp(turn, -1, 1); pitchIn = clamp(pitchIn, -1, 1);
+  if (coarse && !thrIn) P.throttle += ((touchRun ? 1 : .45) - P.throttle) * Math.min(1, dt * .8);
+  P.throttle = clamp(P.throttle + thrIn * dt * .6, 0, 1);
+  const onSurface = P.y <= planeFloor(P.x, P.z) + .05, lift = smooth(18, 30, P.speed);
+  P.pitch = clamp(P.pitch + pitchIn * dt * .9, onSurface ? 0 : -.7, .6 * lift);
+  if (!pitchIn) P.pitch *= 1 - dt * .5;
+  P.speed += (P.throttle * 58 - P.speed) * dt * .35 - Math.sin(P.pitch) * 9.8 * dt * .6;
+  if (onSurface) P.speed *= 1 - dt * (groundAt(P.x, P.z) < WATER ? .25 : 1.2);
+  P.speed = clamp(P.speed, 0, 75);
+  P.yaw += turn * dt * (onSurface ? .7 * Math.min(1, P.speed / 6) : .45 + lift * .5);
+  P.roll += ((onSurface ? 0 : -turn * .55) - P.roll) * Math.min(1, dt * 3);
+  const cp = Math.cos(P.pitch), vy = Math.sin(P.pitch) * P.speed * lift - (1 - lift) * 7;
+  P.x += Math.sin(P.yaw) * cp * P.speed * dt; P.z += Math.cos(P.yaw) * cp * P.speed * dt;
+  P.y = Math.min(P.y + vy * dt, 320);
+  const lim = HALF - 15;
+  if (Math.abs(P.x) > lim || Math.abs(P.z) > lim) { P.x = clamp(P.x, -lim, lim); P.z = clamp(P.z, -lim, lim); P.yaw += angDiff(Math.atan2(-P.x, -P.z), P.yaw) * Math.min(1, dt * 1.5); }
+  const floor = planeFloor(P.x, P.z), onWater = groundAt(P.x, P.z) < WATER - .3;
+  let crash = !!buildingHit(P.x, P.z, P.y + 1, 1.5);
+  if (P.y <= floor) { if ((!onWater && P.speed > 22) || vy < -10) crash = true; P.y = floor; P.pitch = Math.max(P.pitch, 0); }
+  if (crash) {
+    boom(P.x, P.y, P.z); audio.thud();
+    const x = P.x, z = P.z;
+    leavePlane(true); player.x = x; player.z = z; player.y = surfaceAt(x, z) + 1; player.vy = 0;
+    resetPlane(P); toast("Crash landing", "The seaplane is back at its dock"); return;
+  }
+  placePlane(P);
+  P.prop.rotation.z += dt * (6 + P.throttle * 40);
+  player.x = P.x; player.z = P.z; player.y = P.y; player.yaw = P.yaw; player.speed = P.speed;
+}
+function enterPlane(P) { player.plane = P; hero.g.visible = false; look.dist = Math.max(look.dist, 14); look.lastManual = -10; if (radio.wanted) radio.start(); }
+function leavePlane(force) {
+  const P = player.plane; if (!P) return true;
+  if (!force && (P.speed > 6 || P.y > planeFloor(P.x, P.z) + .5)) { toast("Land first", "Slow down on the water to get out"); return false; }
+  player.plane = null; hero.g.visible = true; P.speed = 0; P.throttle = 0;
+  const rx = -Math.cos(P.yaw), rz = Math.sin(P.yaw);
+  player.x = P.x + rx * 4; player.z = P.z + rz * 4; player.y = surfaceAt(player.x, player.z) + .5; player.vy = 0;
+  look.dist = Math.min(look.dist, 10); radio.stop();
+  return true;
+}
+
+/* ================= Drone ================= */
+const drone = (function () {
+  const g = new THREE.Group(), body = flat(0x2b2b38), rotorMat = new THREE.MeshBasicMaterial({ color: 0xdedede, transparent: true, opacity: .45 }), rotors = [];
+  const core = new THREE.Mesh(new THREE.BoxGeometry(.7, .22, .7), body); g.add(core);
+  const led = new THREE.Mesh(new THREE.BoxGeometry(.2, .08, .08), new THREE.MeshBasicMaterial({ color: 0x24d6c7 })); led.position.set(0, .05, .36); g.add(led);
+  for (const [x, z] of [[-.6, -.6], [.6, -.6], [-.6, .6], [.6, .6]]) {
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(.08, .06, .85), body); arm.position.set(x / 2, 0, z / 2); arm.rotation.y = Math.atan2(x, z); g.add(arm);
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(.34, .34, .02, 12), rotorMat); r.position.set(x, .12, z); g.add(r); rotors.push(r);
+  }
+  g.visible = false; g.traverse(o => { if (o.isMesh) o.castShadow = true; }); scene.add(g);
+  return { g, rotors, active: false, x: 0, y: 0, z: 0, yaw: 0, tilt: 0, warn: 0 };
+})();
+const DRONE_RANGE = 220;
+function toggleDrone() {
+  if (drone.active) { drone.active = false; drone.g.visible = false; look.dist = Math.min(look.dist, 10); toast("Drone recalled"); return; }
+  if (player.car || player.plane || player.swimming) return;
+  drone.active = true; drone.g.visible = true;
+  drone.x = player.x + Math.sin(player.yaw) * 1.5; drone.z = player.z + Math.cos(player.yaw) * 1.5; drone.y = player.y + 2.5; drone.yaw = player.yaw;
+  look.dist = Math.max(look.dist, 8);
+}
+function updateDrone(dt) {
+  const d = drone;
+  let ix = 0, iz = 0, up = 0;
+  if (keys.KeyW || keys.ArrowUp) iz += 1; if (keys.KeyS || keys.ArrowDown) iz -= 1;
+  if (keys.KeyA || keys.ArrowLeft) ix -= 1; if (keys.KeyD || keys.ArrowRight) ix += 1;
+  if (stick.id !== null) { ix += stick.x; iz -= stick.y; }
+  if (keys.Space || touchBrake) up += 1; if (keys.ShiftLeft || keys.ShiftRight || keys.KeyC || touchRunHeld) up -= 1;
+  const mag = Math.min(1, Math.hypot(ix, iz));
+  if (mag > .05) {
+    const fx = -Math.sin(look.yaw), fz = -Math.cos(look.yaw), mx = fx * iz - fz * ix, mz = fz * iz + fx * ix, ml = Math.hypot(mx, mz) || 1;
+    d.x += mx / ml * 18 * mag * dt; d.z += mz / ml * 18 * mag * dt;
+    d.yaw += angDiff(Math.atan2(mx, mz), d.yaw) * Math.min(1, dt * 6);
+  }
+  d.y = clamp(d.y + up * 10 * dt, surfaceAt(d.x, d.z, d.y) + .6, 150);
+  const b = buildingHit(d.x, d.z, d.y, .6);
+  if (b) {
+    const top = CITY.h - .2 + b.height + .6, pen = [d.x - (b.x0 - .6), (b.x1 + .6) - d.x, d.z - (b.z0 - .6), (b.z1 + .6) - d.z, top - d.y], m = Math.min(...pen);
+    if (m === pen[4]) d.y = top; else if (m === pen[0]) d.x = b.x0 - .6; else if (m === pen[1]) d.x = b.x1 + .6; else if (m === pen[2]) d.z = b.z0 - .6; else d.z = b.z1 + .6;
+  }
+  const dx = d.x - player.x, dz = d.z - player.z, dist = Math.hypot(dx, dz);
+  if (dist > DRONE_RANGE) { d.x = player.x + dx / dist * DRONE_RANGE; d.z = player.z + dz / dist * DRONE_RANGE; if (d.warn <= 0) { toast("Signal limit", "The drone can fly " + DRONE_RANGE + " m from you"); d.warn = 6; } }
+  d.warn -= dt;
+  d.tilt += (mag * .25 - d.tilt) * Math.min(1, dt * 5);
+  d.g.position.set(d.x, d.y + Math.sin(elapsed * 3) * .05, d.z); d.g.rotation.set(d.tilt, d.yaw, 0, "YXZ");
+  d.rotors.forEach((r, i) => { r.rotation.y += dt * 40 * (i % 2 ? 1 : -1); });
+}
+
+/* ================= Pedestrians in Neon Bay ================= */
+const peds = [];
+const pedMesh = {};
+(function spawnPeds() {
+  const r = rng(SEED + 88), N = 70;
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: .8 });
+  pedMesh.torso = new THREE.InstancedMesh(new THREE.BoxGeometry(.8, 1, .45), mat, N);
+  pedMesh.head = new THREE.InstancedMesh(new THREE.BoxGeometry(.48, .5, .48), mat, N);
+  pedMesh.legs = new THREE.InstancedMesh(new THREE.BoxGeometry(.28, .95, .3).translate(0, -.475, 0), mat, N * 2);
+  const shirts = [0xff8fb0, 0x24d6c7, 0xf6f2ea, 0xf6a623, 0xb36bff, 0x6b8cff, 0xffd166, 0x9fe37a, 0xe94e4e], skins = [0xf1c8a0, 0xc98e64, 0x8d5a3b, 0xe0b48f, 0x5c3a28], pants = [0x2b2b38, 0xe9e2d0, 0x3d5a80, 0x7a5a3c, 0xf6f2ea];
+  const col = new THREE.Color();
+  for (let i = 0; i < N; i++) {
+    const alongZ = r() < .55, side = r() < .5 ? -6.2 : 6.2;
+    const line = alongZ ? streetsX[Math.floor(r() * streetsX.length)] + side : streetsZ[Math.floor(r() * streetsZ.length)] + side;
+    const lo = alongZ ? CITY.z0 - 2 : CITY.x0 - 2, hi = alongZ ? CITY.z1 + 2 : CITY.x1 + 2;
+    peds.push({ alongZ, line, lo, hi, t: lerp(lo, hi, r()), dir: r() < .5 ? 1 : -1, speed: 1.1 + r() * .8, phase: r() * 6, knock: 0, kx: 0, kz: 0, pause: 0, x: 0, z: 0 });
+    pedMesh.torso.setColorAt(i, col.setHex(shirts[Math.floor(r() * shirts.length)]));
+    pedMesh.head.setColorAt(i, col.setHex(skins[Math.floor(r() * skins.length)]));
+    const pc = pants[Math.floor(r() * pants.length)]; pedMesh.legs.setColorAt(i * 2, col.setHex(pc)); pedMesh.legs.setColorAt(i * 2 + 1, col);
+  }
+  for (const k in pedMesh) { pedMesh[k].castShadow = true; pedMesh[k].instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(pedMesh[k]); }
+})();
+const _pm = { base: new THREE.Matrix4(), part: new THREE.Matrix4(), rot: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(0, 0, 0, "YXZ"), v: new THREE.Vector3(), one: new THREE.Vector3(1, 1, 1) };
+function updatePeds(dt) {
+  if (Math.hypot(view.x - 220, view.z - 30) > 420) return;
+  const car = player.car;
+  peds.forEach((p, i) => {
+    let yaw;
+    if (p.knock > 0) {
+      p.knock -= dt;
+    } else {
+      p.pause -= dt;
+      const px = p.alongZ ? p.line : p.t, pz = p.alongZ ? p.t : p.line;
+      if (car && Math.abs(car.speed) > 5 && Math.hypot(car.x - px, car.z - pz) < 2.4) { p.knock = 4; p.kx = Math.sin(car.heading); p.kz = Math.cos(car.heading); p.t += (p.alongZ ? p.kz : p.kx) * 2; }
+      else if (!car && !player.plane && Math.hypot(player.x - px, player.z - pz) < 1.4) p.pause = .6;
+      else if (p.pause <= 0) { p.t += p.dir * p.speed * dt; if (p.t > p.hi) { p.t = p.hi; p.dir = -1; } if (p.t < p.lo) { p.t = p.lo; p.dir = 1; } p.phase += dt * p.speed * 4.2; }
+    }
+    p.x = p.alongZ ? p.line : p.t; p.z = p.alongZ ? p.t : p.line;
+    yaw = p.knock > 0 ? Math.atan2(p.kx, p.kz) : p.alongZ ? (p.dir > 0 ? 0 : Math.PI) : (p.dir > 0 ? Math.PI / 2 : -Math.PI / 2);
+    const lying = p.knock > 0 ? Math.min(1, (4 - p.knock) * 4) * (p.knock < .6 ? p.knock / .6 : 1) : 0;
+    _pm.e.set(-lying * Math.PI / 2, yaw, 0); _pm.q.setFromEuler(_pm.e);
+    _pm.base.compose(_pm.v.set(p.x, CITY.h + .25 * lying, p.z), _pm.q, _pm.one);
+    const swing = p.knock > 0 || p.pause > 0 ? 0 : Math.sin(p.phase) * .55;
+    _pm.part.makeTranslation(0, 1.45, 0); pedMesh.torso.setMatrixAt(i, _pm.rot.multiplyMatrices(_pm.base, _pm.part));
+    _pm.part.makeTranslation(0, 2.2, 0); pedMesh.head.setMatrixAt(i, _pm.rot.multiplyMatrices(_pm.base, _pm.part));
+    for (const s of [0, 1]) { _pm.part.makeRotationX(s ? swing : -swing).setPosition(s ? .2 : -.2, .95, 0); pedMesh.legs.setMatrixAt(i * 2 + s, _pm.rot.multiplyMatrices(_pm.base, _pm.part)); }
+  });
+  for (const k in pedMesh) pedMesh[k].instanceMatrix.needsUpdate = true;
+}
+
+/* ================= Jobs: taxi fares and courier runs ================= */
+const AVENUES = ["Bayshore Ave", "Coral Way", "Flamingo Ave", "Collins Ave", "Washington Ave", "Ocean Drive"];
+const ordinal = n => n + (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
+const PASSENGERS = ["Marisol", "Dex", "Lucía", "Tommy", "Rosa", "Beau", "Inés", "Ray", "Carmen", "Julio", "Nina", "Vince"];
+const SHOPS = ["Pastel Pizza", "Flamingo Florist", "Neon Video", "Bayside Records", "Sunline Surf Shop", "Café Cubano"];
+const stops = [];
+(function buildStops() {
+  const r = rng(SEED + 99);
+  streetsX.forEach((sx, i) => streetsZ.forEach((sz, j) => { if (r() < .55) stops.push({ x: sx + (r() < .5 ? 6.3 : -6.3), z: sz + (r() < .5 ? 6.3 : -6.3), label: AVENUES[i] + " & " + ordinal(j + 1) + " St", city: true }); }));
+  for (const road of roads) for (let i = 20; i < road.samples.length - 5; i += 35) {
+    const s = road.samples[i]; if (s.bridge || cityMask(s.x, s.z) > .2) continue;
+    const off = road.w + 2.5, x = s.x - s.tz * off, z = s.z + s.tx * off;
+    if (groundAt(x, z) > WATER) stops.push({ x, z, label: road.def.name + ", " + regionAt(x, z), city: false });
+  }
+})();
+let job = null, cash = 0;
+const markerMat = new THREE.MeshBasicMaterial({ color: 0x24d6c7, transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+const marker = new THREE.Group();
+marker.add(new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 3, 28, 1, true).translate(0, 1.5, 0), markerMat));
+const markerArrow = new THREE.Mesh(new THREE.ConeGeometry(.9, 1.6, 4).rotateX(Math.PI), new THREE.MeshBasicMaterial({ color: 0x24d6c7, fog: false }));
+marker.add(markerArrow, new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, 160, 8, 1, true).translate(0, 80, 0), markerMat));
+marker.visible = false; scene.add(marker);
+const passenger = buildHuman(); passenger.g.visible = false; scene.add(passenger.g);
+function pickStop(fromX, fromZ, minD, maxD, filter) {
+  const ok = stops.filter(s => { const d = Math.hypot(s.x - fromX, s.z - fromZ); return d >= minD && d <= maxD && (!filter || filter(s)); });
+  const list = ok.length ? ok : stops;
+  return list[Math.floor(Math.random() * list.length)];
+}
+function startJob() {
+  if (job) { job = null; marker.visible = false; passenger.g.visible = false; toast("Job cancelled"); return; }
+  if (drone.active || player.plane) { toast("No jobs right now", "Jobs work on foot or by car"); return; }
+  if (player.car) {
+    const pick = pickStop(player.x, player.z, 50, 320), drop = pickStop(pick.x, pick.z, 180, 700, s => s !== pick), name = PASSENGERS[Math.floor(Math.random() * PASSENGERS.length)];
+    job = { type: "taxi", stage: "pickup", pick, drop, name, pay: Math.round(20 + Math.hypot(drop.x - pick.x, drop.z - pick.z) * .12), timeLeft: 0 };
+    passenger.g.position.set(pick.x, surfaceAt(pick.x, pick.z), pick.z); passenger.g.rotation.y = Math.random() * 6; passenger.g.visible = true;
+    passenger.jacket.material.color.setHex([0xff8fb0, 0xf6a623, 0xb36bff, 0x6b8cff][Math.floor(Math.random() * 4)]);
+    toast("Taxi fare", "Pick up " + name + " at " + pick.label);
+  } else {
+    const pick = pickStop(player.x, player.z, 20, 400, s => s.city), drop = pickStop(pick.x, pick.z, 150, 600, s => s !== pick), shop = SHOPS[Math.floor(Math.random() * SHOPS.length)];
+    job = { type: "courier", stage: "pickup", pick, drop, shop, pay: Math.round(15 + Math.hypot(drop.x - pick.x, drop.z - pick.z) * .1), timeLeft: 0 };
+    toast("Courier run", "Collect a package from " + shop);
+  }
+}
+function updateJobs(dt) {
+  if (!job) { marker.visible = false; return; }
+  const target = job.stage === "pickup" ? job.pick : job.drop, color = job.stage === "pickup" ? 0x24d6c7 : 0xf6a623;
+  markerMat.color.setHex(color); markerArrow.material.color.setHex(color);
+  marker.visible = true; marker.position.set(target.x, surfaceAt(target.x, target.z), target.z);
+  markerArrow.position.y = 4 + Math.sin(elapsed * 3) * .4; markerArrow.rotation.y += dt * 2;
+  const d = Math.hypot(view.x - target.x, view.z - target.z), veh = player.car, slow = !veh || Math.abs(veh.speed) < 4;
+  if (job.stage === "dropoff") job.timeLeft -= dt;
+  if (job.type === "taxi") {
+    if (job.stage === "pickup" && veh && d < 8 && slow) {
+      passenger.g.visible = false; job.stage = "dropoff"; job.timeLeft = Math.hypot(job.drop.x - job.pick.x, job.drop.z - job.pick.z) / 15 + 30;
+      audio.chime(); toast(job.name + " is in", "Drive to " + job.drop.label);
+    } else if (job.stage === "dropoff" && veh && d < 8 && slow) {
+      const pay = Math.max(5, job.pay + (job.timeLeft > 0 ? Math.round(job.timeLeft * .8) : -Math.round(job.pay * .4)));
+      cash += pay; audio.chime(); toast("+$" + pay, job.timeLeft > 0 ? "Fare paid, with a tip from " + job.name : job.name + " paid, but no tip"); job = null; save();
+    }
+  } else {
+    const reach = veh ? 8 : 3.2;
+    if (job.stage === "pickup" && d < reach && slow) {
+      job.stage = "dropoff"; job.timeLeft = Math.hypot(job.drop.x - job.pick.x, job.drop.z - job.pick.z) / 9 + 40;
+      audio.chime(); toast("Package collected", "Deliver it to " + job.drop.label);
+    } else if (job.stage === "dropoff" && d < reach && slow) {
+      cash += job.pay; audio.chime(); toast("+$" + job.pay, "Delivered from " + job.shop); job = null; save();
+    } else if (job.stage === "dropoff" && job.timeLeft <= 0) {
+      toast("Too late", "The customer cancelled the delivery"); job = null;
+    }
+  }
+}
+function jobText() {
+  if (!job) return "";
+  const target = job.stage === "pickup" ? job.pick : job.drop, d = Math.round(Math.hypot(view.x - target.x, view.z - target.z));
+  const what = job.type === "taxi" ? (job.stage === "pickup" ? "Pick up " + job.name : "Drop off " + job.name) : (job.stage === "pickup" ? "Collect from " + job.shop : "Deliver package");
+  const t = job.stage === "dropoff" ? " · " + Math.max(0, Math.floor(job.timeLeft / 60)) + ":" + String(Math.max(0, Math.floor(job.timeLeft % 60))).padStart(2, "0") : "";
+  return (job.type === "taxi" ? "TAXI" : "COURIER") + " · " + what + " · " + target.label + " · " + d + " m" + t + (job.type === "taxi" && !player.car ? " · get in a car" : "");
+}
+function jobTarget() { return job ? (job.stage === "pickup" ? job.pick : job.drop) : null; }
+
 /* ================= Regions ================= */
 function regionAt(x, z) {
   const dk = keysDist(x, z), dm = mainlandDist(x, z);
+  if (Math.max(dm, dk) < -60) return "Open Water";
   if ((dk > dm && dk > -40) || z > TIP + 20) return "Coral Keys";
-  if (cityMask(x, z) > .3 || (x > CITY.x1 && z > CITY.z0 - 20 && z < CITY.z1 + 20)) return "Neon Bay";
+  if (cityMask(x, z) > .3 || (x > CITY.x1 && x < eastCoast(z) + 20 && z > CITY.z0 - 20 && z < CITY.z1 + 20)) return "Neon Bay";
   if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 45) return "Lake Oki";
   if (gladeAt(x, z) > .35) return "Sawgrass Glades";
   if (ridgeAt(x, z) > .35) return "Pine Ridge";
@@ -854,14 +1142,18 @@ function regionAt(x, z) {
 /* ================= Input ================= */
 const keys = {};
 const look = { yaw: 0, pitch: .3, dist: 10, lastManual: -10 };
-let running = false, mapOpen = false, touchRun = false, touchJump = false, touchBrake = false, elapsed = 0;
+let running = false, mapOpen = false, touchRun = false, touchRunHeld = false, touchJump = false, touchBrake = false, elapsed = 0;
+const view = { x: 0, y: 0, z: 0, heading: 0 };   // what the camera, map and pickups follow: the drone when it flies, otherwise the player
+function syncView() { const s = drone.active ? drone : player; view.x = s.x; view.y = s.y; view.z = s.z; view.heading = s.yaw; }
 const stick = { x: 0, y: 0, id: null };
 addEventListener("keydown", e => {
   keys[e.code] = true;
   if (!running) return;
   if (e.code === "KeyM") toggleMap();
-  if (e.code === "KeyE" && !e.repeat) toggleCar();
-  if (e.code === "KeyR" && !e.repeat && player.car) radio.toggle();
+  if (e.code === "KeyE" && !e.repeat) toggleVehicle();
+  if (e.code === "KeyJ" && !e.repeat) startJob();
+  if (e.code === "KeyQ" && !e.repeat) toggleDrone();
+  if (e.code === "KeyR" && !e.repeat && (player.car || player.plane)) radio.toggle();
   if (e.code === "Escape" && mapOpen) toggleMap(false);
   if (e.code === "Space") e.preventDefault();
 });
@@ -894,11 +1186,14 @@ function moveStick(e) {
   stick.x = dx; stick.y = dy; knob.style.transform = `translate(${dx * 34}px, ${dy * 34}px)`;
 }
 const tRun = document.getElementById("tRun"), tJump = document.getElementById("tJump"), tCar = document.getElementById("tCar");
-tRun.addEventListener("pointerdown", () => { touchRun = !touchRun; tRun.classList.toggle("on", touchRun); });
+tRun.addEventListener("pointerdown", () => { touchRunHeld = true; if (!drone.active) { touchRun = !touchRun; tRun.classList.toggle("on", touchRun); } });
+for (const ev of ["pointerup", "pointercancel"]) tRun.addEventListener(ev, () => { touchRunHeld = false; });
 tJump.addEventListener("pointerdown", () => { touchJump = true; touchBrake = true; });
 tJump.addEventListener("pointerup", () => { touchBrake = false; });
 tJump.addEventListener("pointercancel", () => { touchBrake = false; });
-tCar.addEventListener("click", () => toggleCar());
+tCar.addEventListener("click", () => toggleVehicle());
+document.getElementById("jobBtn").addEventListener("click", () => startJob());
+document.getElementById("droneBtn").addEventListener("click", () => toggleDrone());
 document.getElementById("menuBtn").addEventListener("click", () => pause());
 document.getElementById("mapBtn").addEventListener("click", () => toggleMap());
 document.getElementById("bigmap").addEventListener("click", () => toggleMap(false));
@@ -911,7 +1206,7 @@ let toastTimer = 0;
 function toast(title, sub) { toastEl.textContent = ""; toastEl.append(title); if (sub) { const s = document.createElement("small"); s.textContent = sub; toastEl.append(s); } toastEl.style.opacity = 1; toastTimer = 3.4; }
 function start() {
   running = true; journal.hidden = true; touchUI.hidden = !coarse; playBtn.textContent = "Back on the road";
-  tryLock(); audio.init(); if (player.car && radio.wanted) radio.start(); clock.getDelta();
+  tryLock(); audio.init(); if ((player.car || player.plane) && radio.wanted) radio.start(); clock.getDelta();
   if (!elapsed) toast(currentRegion, "Sunline State");
 }
 function pause() { running = false; journal.hidden = false; touchUI.hidden = true; if (locked()) document.exitPointerLock(); for (const k in keys) keys[k] = false; radio.stop(); }
@@ -945,7 +1240,7 @@ const miniCtx = $("minimap").getContext("2d"), bigCtx = $("bigmapCv").getContext
 function drawTapeIcon(ctx, x, y, s) { ctx.fillStyle = "#ff4f91"; ctx.strokeStyle = "#2a1f30"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.rect(x - s, y - s * .65, s * 2, s * 1.3); ctx.fill(); ctx.stroke(); }
 function drawMap(ctx, size, full) {
   ctx.save(); ctx.clearRect(0, 0, size, size);
-  const heading = player.car ? player.car.heading : player.yaw;
+  const heading = view.heading, jt = jobTarget(), jobCol = job && job.stage === "pickup" ? "#24d6c7" : "#f6a623";
   if (full) {
     const k = size / (2 * HALF), m = (x, z) => [(x + HALF) * k, (z + HALF) * k];
     ctx.drawImage(mapImg, 0, 0, size, size);
@@ -953,7 +1248,9 @@ function drawMap(ctx, size, full) {
     [["Neon Bay", 220, 30], ["Sawgrass Glades", -130, 260], ["Lake Oki", LAKE.x, LAKE.z + 6], ["Pine Ridge", -150, -400], ["Coral Keys", -170, 520]].forEach(([t, x, z]) => { const [px, py] = m(x, z); ctx.fillText(t, px, py); });
     ctx.shadowBlur = 0;
     tapes.forEach(t => { if (!t.taken) { const [px, py] = m(t.x, t.z); drawTapeIcon(ctx, px, py, 7); } });
-    const [px, py] = m(player.x, player.z);
+    { const [dx, dy] = m(seaplane.x, seaplane.z); ctx.fillStyle = "#fff4ec"; ctx.font = "600 12px 'Barlow Semi Condensed', sans-serif"; ctx.fillText("✈ SEAPLANE", dx + 8, dy + 4); }
+    if (jt) { const [jx, jy] = m(jt.x, jt.z); ctx.beginPath(); ctx.arc(jx, jy, 8, 0, Math.PI * 2); ctx.fillStyle = jobCol; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#2a1f30"; ctx.stroke(); }
+    const [px, py] = m(view.x, view.z);
     drawArrow(ctx, px, py, heading, 11);
     ctx.font = "600 13px 'Barlow Semi Condensed', sans-serif"; ctx.fillStyle = "#fff4ec"; ctx.textAlign = "left";
     ctx.fillText("SUNLINE STATE · tap or press M to close", 12, 22);
@@ -962,8 +1259,9 @@ function drawMap(ctx, size, full) {
     ctx.beginPath(); ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2); ctx.clip();
     ctx.fillStyle = "#123f63"; ctx.fillRect(0, 0, size, size);
     ctx.translate(size / 2, size / 2); ctx.rotate(look.yaw);
-    ctx.drawImage(mapImg, (player.x + HALF - range) * imgScale, (player.z + HALF - range) * imgScale, range * 2 * imgScale, range * 2 * imgScale, -size / 2, -size / 2, size, size);
-    tapes.forEach(t => { if (t.taken) return; let dx = (t.x - player.x) * scale, dz = (t.z - player.z) * scale; const l = Math.hypot(dx, dz), lim = size / 2 - 8; if (l > lim) { dx = dx / l * lim; dz = dz / l * lim; } ctx.save(); ctx.translate(dx, dz); ctx.rotate(-look.yaw); drawTapeIcon(ctx, 0, 0, 5); ctx.restore(); });
+    ctx.drawImage(mapImg, (view.x + HALF - range) * imgScale, (view.z + HALF - range) * imgScale, range * 2 * imgScale, range * 2 * imgScale, -size / 2, -size / 2, size, size);
+    if (jt) { let dx = (jt.x - view.x) * scale, dz = (jt.z - view.z) * scale; const l = Math.hypot(dx, dz), lim = size / 2 - 8; if (l > lim) { dx = dx / l * lim; dz = dz / l * lim; } ctx.beginPath(); ctx.arc(dx, dz, 6, 0, Math.PI * 2); ctx.fillStyle = jobCol; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#2a1f30"; ctx.stroke(); }
+    tapes.forEach(t => { if (t.taken) return; let dx = (t.x - view.x) * scale, dz = (t.z - view.z) * scale; const l = Math.hypot(dx, dz), lim = size / 2 - 8; if (l > lim) { dx = dx / l * lim; dz = dz / l * lim; } ctx.save(); ctx.translate(dx, dz); ctx.rotate(-look.yaw); drawTapeIcon(ctx, 0, 0, 5); ctx.restore(); });
     ctx.restore(); ctx.save();
     drawArrow(ctx, size / 2, size / 2, heading - look.yaw, 8);
   }
@@ -982,7 +1280,8 @@ function drawCompass() {
     const x = w / 2 + angDiff(a, camH) * pxPerRad; if (x < -20 || x > w + 20) return;
     ctx.fillStyle = l.length === 1 ? "#fff4ec" : "rgba(255,244,236,.55)"; ctx.font = (l.length === 1 ? "600 15px " : "500 12px ") + "'Barlow Semi Condensed', sans-serif"; ctx.fillText(l, x, h / 2 + 1);
   });
-  tapes.forEach(t => { if (t.taken) return; const x = w / 2 + angDiff(Math.atan2(t.x - player.x, -(t.z - player.z)), camH) * pxPerRad; if (x > 0 && x < w) { ctx.fillStyle = "#ff4f91"; ctx.fillRect(x - 4, 3, 8, 5); } });
+  tapes.forEach(t => { if (t.taken) return; const x = w / 2 + angDiff(Math.atan2(t.x - view.x, -(t.z - view.z)), camH) * pxPerRad; if (x > 0 && x < w) { ctx.fillStyle = "#ff4f91"; ctx.fillRect(x - 4, 3, 8, 5); } });
+  const jt = jobTarget(); if (jt) { const x = w / 2 + angDiff(Math.atan2(jt.x - view.x, -(jt.z - view.z)), camH) * pxPerRad; if (x > 0 && x < w) { ctx.beginPath(); ctx.arc(x, 7, 5, 0, Math.PI * 2); ctx.fillStyle = job.stage === "pickup" ? "#24d6c7" : "#f6a623"; ctx.fill(); } }
   ctx.fillStyle = "#24d6c7"; ctx.fillRect(w / 2 - 1, h - 7, 2, 7);
 }
 
@@ -993,6 +1292,13 @@ const audio = {
   chime() {
     const c = this.ctx; if (!c) return;
     [523.3, 659.3, 784, 1046.5].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + i * .08; o.type = "triangle"; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 1.2); o.connect(g).connect(c.destination); o.start(t); o.stop(t + 1.3); });
+  },
+  thud() {
+    const c = this.ctx; if (!c) return;
+    const len = c.sampleRate * .8, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); src.buffer = buf; f.type = "lowpass"; f.frequency.value = 400; g.gain.value = .5;
+    src.connect(f).connect(g).connect(c.destination); src.start();
   },
   surf() {
     const c = this.ctx, len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
@@ -1057,8 +1363,8 @@ function updateSky(dt) {
   if (moonUp) sun.color.setRGB(.6, .6, .95); else sun.color.setRGB(1, .72 + .26 * day, .55 + .4 * day);
   hemi.intensity = .22 + .55 * day;
   hemi.color.copy(cTop).lerp(white, .5);
-  sun.position.set(player.x + lightDir.x * 160, player.y + lightDir.y * 160, player.z + lightDir.z * 160);
-  sun.target.position.set(player.x, player.y, player.z);
+  sun.position.set(view.x + lightDir.x * 160, view.y + lightDir.y * 160, view.z + lightDir.z * 160);
+  sun.target.position.set(view.x, view.y, view.z);
   sky.position.set(camera.position.x, 0, camera.position.z); stars.position.copy(sky.position);
   stars.material.opacity = night;
   moon.position.set(camera.position.x - sunDir.x * 1500, -sunDir.y * 1500, camera.position.z - sunDir.z * 1500); moon.visible = -sunDir.y > -.1;
@@ -1067,7 +1373,7 @@ function updateSky(dt) {
   lightMat.emissiveIntensity = .3 + night * 1.5; tailMat.emissiveIntensity = .4 + night * 1.2;
   wheelRim.emissiveIntensity = .2 + night * 1.6;
   lighthouseBeam.material.opacity = night * .22;
-  if (audio.surfGain) audio.surfGain.gain.value = .015 + .04 * (1 - smooth(20, 120, Math.abs(Math.max(mainlandDist(player.x, player.z), keysDist(player.x, player.z)))));
+  if (audio.surfGain) audio.surfGain.gain.value = .015 + .04 * (1 - smooth(20, 120, Math.abs(Math.max(mainlandDist(view.x, view.z), keysDist(view.x, view.z)))));
   const mins = Math.floor(dayTime * 1440);
   $("clock").textContent = String(Math.floor(mins / 60)).padStart(2, "0") + ":" + String(mins % 60).padStart(2, "0");
   $("dayLbl").textContent = "Day " + dayCount;
@@ -1077,6 +1383,11 @@ function updateSky(dt) {
 let collected = 0, currentRegion = "Neon Bay";
 function applyState(s) {
   if (player.car) leaveCar(true);
+  if (player.plane) leavePlane(true);
+  resetPlane(seaplane);
+  if (drone.active) toggleDrone();
+  job = null; marker.visible = false; passenger.g.visible = false;
+  cash = s && isFinite(s.cash) ? s.cash : 0;
   cars.forEach(c => { if (!c.traffic) { c.x = c.home.x; c.z = c.home.z; c.heading = c.home.heading; c.speed = 0; c.y = surfaceAt(c.x, c.z); placeCar(c, 1); } });
   const sp = { x: starterCar.x - 3, z: starterCar.z + 2 };
   player.x = s && isFinite(s.x) ? s.x : sp.x; player.z = s && isFinite(s.z) ? s.z : sp.z;
@@ -1087,9 +1398,9 @@ function applyState(s) {
   collected = 0;
   tapes.forEach(t => { t.taken = !!(s && s.taken && s.taken.includes(t.id)); t.group.visible = !t.taken; if (t.taken) collected++; });
   currentRegion = regionAt(player.x, player.z); $("regionChip").textContent = currentRegion;
-  updateCount();
+  updateCount(); syncView();
 }
-function snapshot() { return { x: player.x, z: player.z, yaw: player.yaw, dayTime, dayCount, taken: tapes.filter(t => t.taken).map(t => t.id) }; }
+function snapshot() { return { x: player.x, z: player.z, yaw: player.yaw, dayTime, dayCount, cash, taken: tapes.filter(t => t.taken).map(t => t.id) }; }
 const SAVE_KEY = "neon-coast-save-v1";
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot())); } catch (_) {} }
 function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (_) { return null; } }
@@ -1102,7 +1413,14 @@ function nearestParkedCar() {
   for (const c of cars) { if (c.traffic) continue; const d = Math.hypot(c.x - player.x, c.z - player.z); if (d < bd) { bd = d; best = c; } }
   return best;
 }
-function toggleCar() { if (player.car) leaveCar(); else { const c = nearestParkedCar(); if (c) enterCar(c); } }
+function nearPlane() { return !player.car && !player.plane && Math.hypot(seaplane.x - player.x, seaplane.z - player.z) < 8 && Math.abs(seaplane.y - player.y) < 4; }
+function toggleVehicle() {
+  if (drone.active) return;
+  if (player.plane) { leavePlane(); return; }
+  if (player.car) { leaveCar(); return; }
+  if (nearPlane()) { enterPlane(seaplane); return; }
+  const c = nearestParkedCar(); if (c) enterCar(c);
+}
 function enterCar(c) {
   player.car = c; hero.g.visible = false; c.speed = 0; c.vy = 0;
   look.dist = Math.max(look.dist, 12); look.lastManual = -10;
@@ -1157,6 +1475,7 @@ function updatePlayer(dt) {
   if (keys.KeyW || keys.ArrowUp) iz += 1; if (keys.KeyS || keys.ArrowDown) iz -= 1;
   if (keys.KeyA || keys.ArrowLeft) ix -= 1; if (keys.KeyD || keys.ArrowRight) ix += 1;
   if (stick.id !== null) { ix += stick.x; iz -= stick.y; }
+  if (drone.active) ix = iz = 0;   // the pilot stands still while the drone flies
   const mag = Math.min(1, Math.hypot(ix, iz));
   const ground = surfaceAt(player.x, player.z, player.y);
   player.swimming = ground < -1.6 && player.y <= -1.5;
@@ -1178,7 +1497,7 @@ function updatePlayer(dt) {
   for (const c of cars) { const dx = player.x - c.x, dz = player.z - c.z, d = Math.hypot(dx, dz); if (d < 2.6 && d > 1e-3 && Math.abs(player.y - c.y) < 2) { player.x = c.x + dx / d * 2.6; player.z = c.z + dz / d * 2.6; } }
   const lim = HALF - 12; player.x = clamp(player.x, -lim, lim); player.z = clamp(player.z, -lim, lim);
   const g = surfaceAt(player.x, player.z, player.y);
-  if ((keys.Space || touchJump) && player.onGround && !player.swimming) { player.vy = 9; player.onGround = false; }
+  if ((keys.Space || touchJump) && player.onGround && !player.swimming && !drone.active) { player.vy = 9; player.onGround = false; }
   touchJump = false;
   player.vy -= 24 * dt; player.y += player.vy * dt;
   const floor = Math.max(g, -1.6);
@@ -1195,10 +1514,13 @@ function updatePlayer(dt) {
 const clock = new THREE.Clock();
 const camPos = new THREE.Vector3(), camTarget = new THREE.Vector3();
 function updateCamera(dt) {
-  const c = player.car;
-  if (c && elapsed - look.lastManual > 1.5 && Math.abs(c.speed) > 2) look.yaw += angDiff(c.heading + Math.PI, look.yaw) * Math.min(1, dt * 2.5);
-  camTarget.set(player.x, player.y + (c ? 1.6 : 2.2), player.z);
-  const cp = Math.cos(look.pitch), dist = look.dist + (c ? Math.abs(c.speed) * .08 : 0);
+  const veh = player.car || player.plane, vs = veh ? Math.abs(veh.speed) : 0;
+  if (veh && elapsed - look.lastManual > 1.5 && vs > 2) {
+    look.yaw += angDiff((player.car ? veh.heading : veh.yaw) + Math.PI, look.yaw) * Math.min(1, dt * 2.5);
+    if (player.plane) look.pitch += ((.18 - veh.pitch * .6) - look.pitch) * Math.min(1, dt * 1.5);
+  }
+  camTarget.set(view.x, view.y + (drone.active ? .3 : player.plane ? 3 : player.car ? 1.6 : 2.2), view.z);
+  const cp = Math.cos(look.pitch), dist = look.dist + (player.car ? vs * .08 : player.plane ? 8 + vs * .1 : 0);
   const cx = camTarget.x + Math.sin(look.yaw) * cp * dist, cz = camTarget.z + Math.cos(look.yaw) * cp * dist;
   const cy = Math.max(camTarget.y + Math.sin(look.pitch) * dist, groundAt(cx, cz) + 1.2, WATER + .4);
   camPos.set(cx, cy, cz);
@@ -1206,42 +1528,61 @@ function updateCamera(dt) {
   camera.lookAt(camTarget);
 }
 function updateTapes(dt) {
+  const reach = player.plane ? 7 : player.car ? 3.5 : drone.active ? 2.8 : 2.4;
   for (const t of tapes) {
     if (t.taken) continue;
     t.spin.rotation.y += dt * 1.6; t.spin.position.y = Math.sin(elapsed * 2 + t.id) * .3;
-    const d = Math.hypot(player.x - t.x, player.z - t.z);
+    const d = Math.hypot(view.x - t.x, view.z - t.z);
     t.beam.material.opacity = .06 + .16 * smooth(20, 120, d);
-    if (d < (player.car ? 3.5 : 2.4) && Math.abs(player.y + 1 - t.y) < 4) {
+    if (d < reach && Math.abs(view.y + (drone.active ? 0 : 1) - t.y) < (player.plane ? 6 : 4)) {
       t.taken = true; t.group.visible = false; collected++; updateCount(); audio.chime(); save();
       if (collected === TAPE_TOTAL) toast("Full mixtape collection", "All twelve tapes found. Summer is saved");
-      else toast("“" + t.track + "”", "Tape " + collected + " of " + TAPE_TOTAL + " found");
+      else toast("\u201C" + t.track + "\u201D", "Tape " + collected + " of " + TAPE_TOTAL + " found" + (drone.active ? " by drone" : ""));
     }
   }
 }
 let saveTimer = 0, uiTimer = 0, regionTimer = 0;
 function updateHints() {
-  const near = !player.car && nearestParkedCar();
+  const free = !player.car && !player.plane && !drone.active, nearCar = free && nearestParkedCar(), nearSea = free && nearPlane();
   let html = "";
-  if (!coarse) { if (player.car) html = "<kbd>E</kbd>Get out &nbsp; <kbd>R</kbd>Radio &nbsp; <kbd>Space</kbd>Handbrake"; else if (near) html = "<kbd>E</kbd>Drive"; }
+  if (!coarse) {
+    if (player.car) html = "<kbd>E</kbd>Get out &nbsp; <kbd>R</kbd>Radio &nbsp; <kbd>Space</kbd>Handbrake &nbsp; <kbd>J</kbd>" + (job ? "Cancel job" : "Taxi job");
+    else if (player.plane) html = "<kbd>W</kbd><kbd>S</kbd>Throttle " + Math.round(player.plane.throttle * 100) + "% &nbsp; <kbd>A</kbd><kbd>D</kbd>Turn &nbsp; <kbd>Space</kbd>Climb &nbsp; <kbd>Shift</kbd>Dive &nbsp; <kbd>E</kbd>Get out";
+    else if (drone.active) html = "<kbd>WASD</kbd>Fly &nbsp; <kbd>Space</kbd>Up &nbsp; <kbd>Shift</kbd>Down &nbsp; <kbd>Q</kbd>Recall";
+    else if (nearSea) html = "<kbd>E</kbd>Fly the seaplane";
+    else if (nearCar) html = "<kbd>E</kbd>Drive";
+  }
   if (hintEl.innerHTML !== html) hintEl.innerHTML = html;
-  tCar.hidden = !(player.car || near); tCar.textContent = player.car ? "Exit" : "Drive";
-  tJump.textContent = player.car ? "Brake" : "Jump";
-  $("speedo").hidden = !player.car;
-  if (player.car) $("speedo").firstChild.nodeValue = Math.round(Math.abs(player.car.speed) * 3.6);
+  tCar.hidden = !(player.car || player.plane || nearCar || nearSea);
+  tCar.textContent = player.car || player.plane ? "Exit" : nearSea ? "Fly" : "Drive";
+  tJump.textContent = player.car ? "Brake" : player.plane || drone.active ? "Up" : "Jump";
+  tRun.textContent = drone.active ? "Down" : player.plane ? "Gas" : "Run";
+  $("droneBtn").textContent = drone.active ? "Recall" : "Drone";
+  $("jobBtn").textContent = job ? "Cancel" : "Job";
+  const veh = player.car || player.plane;
+  $("speedo").hidden = !veh;
+  if (veh) $("speedo").firstChild.nodeValue = Math.round(Math.abs(veh.speed) * 3.6);
+  $("cash").textContent = "$" + cash.toLocaleString("en-US");
+  const jt = jobText(), chip = $("jobChip"); chip.hidden = !jt; if (chip.textContent !== jt) chip.textContent = jt;
 }
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), .05);
   if (running && !mapOpen) {
     elapsed += dt;
-    if (player.car) updateCar(dt); else updatePlayer(dt);
+    if (player.car) updateCar(dt); else if (player.plane) updatePlane(dt); else updatePlayer(dt);
+    if (drone.active) updateDrone(dt);
+    syncView();
     updateTraffic(dt);
+    updatePeds(dt);
+    updateJobs(dt);
     updateTapes(dt);
     updateAnimals(dt);
+    updateEffects(dt);
     updateSky(dt);
     saveTimer += dt; if (saveTimer > 5) { saveTimer = 0; save(); }
     regionTimer += dt;
-    if (regionTimer > .5) { regionTimer = 0; const r = regionAt(player.x, player.z); if (r !== currentRegion) { currentRegion = r; $("regionChip").textContent = r; if (toastTimer <= 0) toast(r); } }
+    if (regionTimer > .5) { regionTimer = 0; const r = regionAt(view.x, view.z); if (r !== currentRegion) { currentRegion = r; $("regionChip").textContent = r; if (toastTimer <= 0) toast(r); } }
   } else if (!running) { look.yaw += dt * .05; updateSky(0); }
   wheel.rotation.z += dt * .12;
   wheel.children.forEach(o => { if (o.userData.cabin) o.rotation.z = -wheel.rotation.z; });
@@ -1253,9 +1594,9 @@ function frame() {
   if (uiTimer > .05) {
     uiTimer = 0;
     drawMap(miniCtx, 150, false); drawCompass(); updateHints();
-    $("coords").textContent = Math.abs(Math.round(player.z)) + (player.z > 0 ? " S · " : " N · ") + Math.abs(Math.round(player.x)) + (player.x < 0 ? " W · " : " E · ") + Math.max(0, Math.round(player.y)) + " m";
+    $("coords").textContent = Math.abs(Math.round(view.z)) + (view.z > 0 ? " S · " : " N · ") + Math.abs(Math.round(view.x)) + (view.x < 0 ? " W · " : " E · ") + Math.max(0, Math.round(view.y)) + " m";
     $("staminaFill").style.transform = "scaleX(" + player.stamina.toFixed(3) + ")";
-    $("stamina").style.opacity = player.stamina > .99 || player.car ? 0 : 1;
+    $("stamina").style.opacity = player.stamina > .99 || player.car || player.plane || drone.active ? 0 : 1;
     if (mapOpen) drawMap(bigCtx, 680, true);
   }
   renderer.render(scene, camera);
