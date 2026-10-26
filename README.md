@@ -26,16 +26,15 @@ This repository contains professional MetaTrader 5 Expert Advisors (EAs) impleme
 
 High-profit strategies come with higher risks. Never risk more than 1-2% of your account balance on a single trade. Always test thoroughly on a demo account before trading live.
 
-## Shards of Veyra (open world game)
+## Neon Coast (open world game)
 
-`game/index.html` is a self-contained 3D open world game that runs in the browser (Three.js, loaded from a CDN).
+`game/index.html` is a self-contained 3D open world game that runs in the browser (Three.js, loaded from a CDN). It is set in the Sunline State, a sunny 1980s peninsula inspired by fan maps of GTA VI's Leonida. All names, places and code are original.
 
-- A procedurally generated island with beaches, forests, snowy peaks, sea, and standing-stone circles
-- Third-person explorer with walking, running (stamina), jumping and swimming
-- Deer that wander, graze and flee when you get close
-- A six-minute day/night cycle with sun, moon and stars
-- Twelve crystal shards to find, marked by pillars of light, a compass, a minimap and a full island map (M)
-- Keyboard and mouse on desktop; on-screen joystick and buttons on phones
-- Progress is saved in the browser
+- **Neon Bay**, an art-deco city with pastel low-rises on Ocean Drive, glass towers, a park and a beach Ferris wheel; windows and neon light up at night
+- **Highway 1** with traffic, running down the coast and across the **Coral Keys** on bridges to a lighthouse
+- **Sawgrass Glades** swamp with cypress, gators and flamingos, **Lake Oki**, and the forested **Pine Ridge** with deer
+- Drive any parked car (E), with a synthwave car radio (R)
+- Twelve mixtapes to find, marked by pink beams of light, a compass, a minimap and a full state map (M)
+- An eight-minute day/night cycle, region names as you travel, keyboard and mouse or touch controls, and progress saved in the browser
 
 Open `game/index.html` in a modern browser to play.
