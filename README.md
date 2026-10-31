@@ -45,3 +45,7 @@ Open `game/index.html` in a modern browser to play.
 ## GTA_SZ (深城纪)
 
 `gta-sz/` is a git submodule linking to [linranff/GTA_SZ](https://github.com/linranff/GTA_SZ), a browser game set in Shenzhen. See [GTA_SZ.md](GTA_SZ.md) for how to run it, how it is built, and why it is linked rather than copied.
+
+## Dustbound Frontier (Godot 4)
+
+`dustbound-frontier/` is a Western open world prototype for Godot 4.3: an outlaw with a revolver, Copper the horse, a frontier town, a bandit camp and a first mission. Open `dustbound-frontier/project.godot` in Godot and press F5. See its [README](dustbound-frontier/README.md), the [Malayalam quick start](dustbound-frontier/docs/QUICK_START_MALAYALAM.md) and the [validation report](dustbound-frontier/docs/VALIDATION_REPORT.md).
