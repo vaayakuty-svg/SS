@@ -1,0 +1,3 @@
+[submodule "gta-sz"]
+	path = gta-sz
+	url = https://github.com/linranff/GTA_SZ.git
