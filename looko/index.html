@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Looko — AI Chart Analyzer</title>
+<meta name="description" content="Upload a chart screenshot and Looko shows the next move: direction, entry, stop loss and take profit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+:root{
+  --bg:#F3F5F9; --ink:#0E1630; --muted:#5A6482; --line:#E2E6EE; --card:#fff;
+  --blue:#2B44F0; --blue-50:#EEF0FE; --green:#0F9D63; --green-50:#E7F6EF; --red:#E0464E; --red-50:#FDECEC;
+  --r:16px;
+  --sh:0 1px 2px rgba(14,22,48,.05),0 12px 32px -14px rgba(14,22,48,.20);
+  --fd:'Space Grotesk',system-ui,sans-serif;
+  --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --fm:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ml:'Noto Sans Malayalam','Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font:16px/1.55 var(--fb); color:var(--ink);
+  background-color:var(--bg);
+  background-image:radial-gradient(rgba(14,22,48,.11) 1px,transparent 1.3px);
+  background-size:24px 24px;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+a{color:inherit}
+.mono{font-family:var(--fm)}
+.ml{font-family:var(--ml)}
+.js:not(.ready) main{visibility:hidden}
+
+/* ---------- layout ---------- */
+.sec{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:88px 24px 104px}
+.wrap{width:100%;max-width:1140px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.sec-head{margin-bottom:32px}
+.sec-head.center{text-align:center}
+.kicker{display:inline-block;font:600 12px/1 var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.h2{display:block;width:fit-content;max-width:980px;font:700 clamp(30px,3.6vw,46px)/1.06 var(--fd);letter-spacing:-.035em}
+.center .h2{margin:0 auto}
+
+/* "✓ Built" badge */
+.built{position:absolute;top:22px;right:24px;z-index:25;display:inline-flex;gap:6px;align-items:center;font:600 12px/1 var(--fm);color:var(--green);background:#fff;border:1px solid #CDEBDD;padding:7px 11px;border-radius:999px;box-shadow:var(--sh)}
+.hero .built{top:84px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 15px/1 var(--fb);text-decoration:none;border-radius:12px;padding:12px 18px;border:1px solid transparent;transition:background-color .2s,box-shadow .2s,border-color .2s;cursor:pointer}
+.btn:focus-visible{outline:3px solid rgba(43,68,240,.35);outline-offset:2px}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 10px 22px -10px rgba(43,68,240,.75)}
+.btn-primary:hover{background:#1F36D6}
+.btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:#C9CFDC}
+.btn.lg{padding:17px 26px;font-size:16px;border-radius:14px}
+
+/* ---------- hero ---------- */
+.nav{position:absolute;top:0;left:0;right:0;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1188px;margin:0 auto;padding:20px 24px}
+.logo{display:inline-flex;align-items:center;gap:10px;font:700 23px/1 var(--fd);letter-spacing:-.03em;text-decoration:none}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center;box-shadow:0 6px 14px -6px rgba(43,68,240,.8)}
+.links{display:flex;gap:28px}
+.links a{color:var(--muted);text-decoration:none;font-weight:500;font-size:15px}
+.links a:hover{color:var(--ink)}
+.hero-in{display:flex;flex-direction:column;align-items:center;text-align:center}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font:500 13px/1 var(--fm);color:var(--blue);background:#fff;border:1px solid #D9DEFB;padding:9px 13px;border-radius:999px;margin-bottom:26px}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(15,157,99,.18)}
+.h1{font:700 clamp(42px,8vw,108px)/.98 var(--fd);letter-spacing:-.045em;margin-bottom:26px}
+.h1 .ln{display:block;width:fit-content;margin:0 auto}
+.accent{color:var(--blue)}
+.lead{width:fit-content;max-width:610px;font-size:clamp(16px,1.6vw,19px);color:var(--muted);margin:0 auto 32px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:30px}
+.trust{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px;font:500 13px/1.4 var(--fm);color:var(--muted)}
+.trust li::before{content:"✓  ";color:var(--green)}
+.hint{position:absolute;left:0;right:0;bottom:92px;margin:0 auto;width:max-content;display:flex;flex-direction:column;align-items:center;gap:12px;font:500 12px/1.4 var(--fm);color:var(--muted);text-align:center}
+.mouse{width:22px;height:34px;border:2px solid #AEB6CB;border-radius:12px;position:relative}
+.mouse::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:var(--blue);animation:wheel 1.6s ease-in-out infinite}
+@keyframes wheel{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(10px)}}
+
+/* ---------- dashboard ---------- */
+.dash{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:20px}
+.chart-card{padding:18px;display:flex;flex-direction:column}
+.cc-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pair{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sym{font:700 19px/1 var(--fd);letter-spacing:-.01em}
+.tf{font:600 12px/1 var(--fm);background:var(--bg);padding:6px 8px;border-radius:6px}
+.file{font:400 12px/1 var(--fm);color:var(--muted)}
+.seg{display:inline-flex;background:var(--bg);border-radius:10px;padding:3px;font:500 13px/1 var(--fb)}
+.seg span{padding:8px 12px;border-radius:8px;color:var(--muted);text-align:center}
+.seg .on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(14,22,48,.14)}
+.chart-area{position:relative;flex:1;min-height:320px;border-radius:12px;background:linear-gradient(#FBFCFE,#F5F7FB);border:1px solid var(--line)}
+.candles{position:absolute;inset:0;border-radius:12px;overflow:hidden}
+.candles svg{display:block;width:100%;height:100%}
+.lvl{position:absolute;left:0;right:0;height:0}
+.lvl.en{--c:var(--blue)} .lvl.sl{--c:var(--red)} .lvl.tp{--c:var(--green)}
+.lvl-line{position:absolute;left:0;right:0;top:0;display:block;border-top:1.5px dashed var(--c)}
+.lvl.en .lvl-line{border-top:2px solid var(--c)}
+.lvl-tag{position:absolute;right:8px;top:-11px;height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:6px;background:var(--c);color:#fff;font:600 11px/1 var(--fm);letter-spacing:.02em;transform-origin:100% 50%;box-shadow:0 4px 10px -4px rgba(14,22,48,.35)}
+.side{padding:20px;display:flex;flex-direction:column;gap:16px}
+.sig-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sig{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.pill{display:inline-flex;align-items:center;gap:7px;font:700 14px/1 var(--fm);letter-spacing:.08em;padding:10px 15px;border-radius:999px}
+.pill.buy{background:var(--green);color:#fff;box-shadow:0 10px 20px -10px rgba(15,157,99,.85)}
+.sig small{font-size:13px;color:var(--muted)}
+.ring{position:relative;width:100px;height:100px;flex:none}
+.ring svg{width:100%;height:100%;display:block}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:7}
+.ring-fg{fill:none;stroke:var(--green);stroke-width:7;stroke-linecap:round;stroke-dasharray:213.63;stroke-dashoffset:68.36;transform:rotate(-90deg);transform-origin:40px 40px}
+.ring-txt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.1}
+.ring-txt b{font:700 21px/1 var(--fm)}
+.ring-txt small{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.plan{list-style:none;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.plan li{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;font-size:14px;color:var(--muted)}
+.plan li+li{border-top:1px solid var(--line)}
+.plan b{font:600 14px/1 var(--fm);color:var(--ink)}
+.c-blue{color:var(--blue)!important}.c-red{color:var(--red)!important}.c-green{color:var(--green)!important}
+.why{font-size:13.5px;line-height:1.5;color:var(--muted);background:var(--bg);border-radius:12px;padding:12px 14px}
+.why strong{color:var(--ink);font-weight:600}
+
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr) 40px minmax(0,1fr);gap:12px;align-items:stretch}
+.step{padding:24px;display:flex;flex-direction:column}
+.step-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.ico{width:48px;height:48px;border-radius:13px;background:var(--blue-50);color:var(--blue);display:grid;place-items:center}
+.ico.g{background:var(--green-50);color:var(--green)}
+.num{font:600 13px/1 var(--fm);color:#A3ABC0}
+.step h3,.feat h3{font:600 21px/1.2 var(--fd);letter-spacing:-.02em;margin-bottom:8px}
+.step p,.feat p{font-size:15px;color:var(--muted)}
+.mini{margin-top:auto;padding-top:20px}
+.file-chip{display:flex;align-items:center;gap:10px;font:500 12px/1 var(--fm);background:var(--bg);border:1px dashed #C7CEDD;padding:11px 12px;border-radius:10px}
+.file-chip .ok{margin-left:auto;color:var(--green);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 12px/1 var(--fm);padding:7px 9px;border-radius:7px;background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.chip.g{background:var(--green-50);border-color:#CBEBDC;color:var(--green)}
+.rows{display:grid;gap:6px}
+.rows div{display:flex;justify-content:space-between;font:600 12px/1 var(--fm);padding:9px 11px;border-radius:8px}
+.rows .e{background:var(--blue-50);color:var(--blue)}
+.rows .s{background:var(--red-50);color:var(--red)}
+.rows .t{background:var(--green-50);color:var(--green)}
+.arrow{align-self:center;justify-self:center;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--blue);box-shadow:var(--sh)}
+
+/* ---------- features ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.feat{padding:20px;display:flex;flex-direction:column;gap:8px}
+.feat-h{display:flex;align-items:center;gap:12px;margin-bottom:2px}
+.feat-h .ico{width:38px;height:38px;border-radius:11px}
+.feat h3{font-size:18px;margin:0}
+.feat p{font-size:14.5px;line-height:1.5}
+.fviz{margin-top:auto;padding-top:10px}
+.rr{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:3px}
+.rr i{display:block;border-radius:99px}
+.rr .rk{flex:1;background:var(--red)} .rr .rw{flex:2.6;background:var(--green)}
+.rr-l{display:flex;justify-content:space-between;font:500 12px/1 var(--fm);color:var(--muted);margin-top:9px}
+.rr-l b{color:var(--ink)}
+.lang{display:grid;gap:6px;font-size:13px}
+.lang div{display:flex;gap:9px;align-items:baseline;background:var(--bg);border-radius:8px;padding:8px 10px}
+.lang span{font:700 10px/1 var(--fm);color:var(--blue);flex:none;width:18px}
+.lang .ml{font-size:13.5px}
+.seg.modes{display:flex;width:100%}
+.seg.modes span{flex:1;padding:7px 4px;line-height:1.25}
+.seg.modes small{display:block;font:500 10.5px/1.2 var(--fm);color:var(--muted);margin-top:3px}
+.meter{height:10px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:68%;background:linear-gradient(90deg,#7ED3AE,var(--green));border-radius:99px}
+.meter-l{display:flex;justify-content:space-between;font:500 12px/1 var(--fm);color:var(--muted);margin-top:9px}
+.meter-l b{color:var(--green)}
+.sr{display:block;width:100%;height:46px}
+
+/* ---------- CTA ---------- */
+.cta{position:relative;overflow:hidden;border-radius:26px;padding:clamp(40px,6vw,76px) clamp(22px,5vw,72px);text-align:center;color:#fff;
+  background-color:var(--ink);
+  background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1.3px),radial-gradient(700px 320px at 50% -10%,rgba(43,68,240,.55),transparent 70%);
+  background-size:22px 22px,100% 100%;
+  box-shadow:0 30px 60px -30px rgba(14,22,48,.55)}
+.cta .kicker{color:#9DAAFF}
+.cta .h2{font-size:clamp(32px,5vw,62px);max-width:820px;margin:0 auto 18px;color:#fff}
+.cta-sub{width:fit-content;max-width:520px;margin:0 auto 32px;color:#AEB6CE;font-size:17px}
+.cta .btn-primary{box-shadow:0 14px 30px -10px rgba(43,68,240,.9)}
+.nfa{width:fit-content;max-width:560px;margin:26px auto 0;font-size:12.5px;line-height:1.5;color:#8790AD}
+.foot{padding:28px 24px 110px;text-align:center;font:500 12.5px/1.6 var(--fm);color:var(--muted)}
+
+/* ---------- agents (cursors + wireframes) ---------- */
+.agents{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.wf{position:absolute;opacity:0;visibility:hidden;background-color:rgba(226,231,240,.92);border:1.5px solid;border-radius:10px;will-change:transform,opacity}
+.wf.txt{background-color:transparent;border-style:dashed}
+.cur{position:absolute;left:0;top:0;opacity:0;visibility:hidden;will-change:transform}
+.cur .arrow-i{position:absolute;left:-3px;top:-2px;display:block;filter:drop-shadow(0 2px 3px rgba(14,22,48,.28))}
+.cur .tag{position:absolute;left:15px;top:20px;color:#fff;font:600 11px/1 var(--fb);padding:5px 8px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 10px -3px rgba(14,22,48,.3)}
+.cur .ripple{position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;border:2px solid;opacity:0;visibility:hidden}
+
+/* ---------- status bar ---------- */
+.status{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;
+  background:rgba(14,22,48,.94);color:#C3CAE0;font:500 12.5px/1 var(--fm);padding:11px 16px;border-radius:999px;
+  box-shadow:0 14px 34px -12px rgba(14,22,48,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);white-space:nowrap;max-width:calc(100vw - 24px)}
+.status b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+.status .sep{color:#47506F}
+.pulse{width:8px;height:8px;border-radius:50%;background:#FFB020;box-shadow:0 0 0 0 rgba(255,176,32,.6);animation:pulse 1.4s infinite}
+.status.done .pulse{background:#22C77F;animation:none;box-shadow:0 0 0 3px rgba(34,199,127,.25)}
+.status.done #stState{color:#5BE0A3}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,176,32,.6)}100%{box-shadow:0 0 0 8px rgba(255,176,32,0)}}
+.st-chips{display:flex;gap:10px;margin-left:4px;padding-left:12px;border-left:1px solid #2A3352}
+.chip-s{display:inline-flex;gap:5px;align-items:center;color:#6F7898;font-size:11px}
+.chip-s i{width:14px;height:14px;border-radius:50%;border:1.5px solid #47506F;display:grid;place-items:center;font:700 8px/1 var(--fm);font-style:normal;color:#fff}
+.chip-s.ok{color:#E6EAF5}
+.chip-s.ok i{background:#22C77F;border-color:#22C77F}
+.toast{position:fixed;left:50%;bottom:66px;transform:translateX(-50%);z-index:60;font:600 12px/1 var(--fm);color:var(--green);background:#fff;border:1px solid #CDEBDD;padding:8px 12px;border-radius:999px;box-shadow:var(--sh);opacity:0;visibility:hidden;pointer-events:none;white-space:nowrap}
+
+/* ---------- responsive ---------- */
+@media (max-width:1000px){ .st-chips{display:none} }
+@media (max-width:900px){
+  .sec{padding:76px 16px 100px}
+  .nav{padding:16px}
+  .built{right:16px;top:16px}
+  .hero .built{top:72px}
+  .links{display:none}
+  .dash{grid-template-columns:1fr}
+  .chart-area{min-height:270px}
+  .steps{grid-template-columns:1fr}
+  .steps .arrow{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:600px){
+  .grid{grid-template-columns:1fr}
+  .ctas .btn{width:100%;justify-content:center}
+  .chart-area{min-height:240px}
+  .seg span{padding:7px 9px}
+  .status{gap:8px;padding:10px 13px;font-size:11.5px}
+  .hint{bottom:88px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hint{display:none}
+  .mouse::after,.pulse{animation:none}
+}
+</style>
+</head>
+<body>
+<main>
+
+<!-- 1 · HERO -->
+<section class="sec hero" id="top" data-name="Hero">
+  <span class="built" aria-hidden="true">✓ Built</span>
+  <header class="nav">
+    <a class="logo" href="#top" data-b aria-label="Looko home">
+      <span class="logo-mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24"><circle cx="7.5" cy="12" r="4.4" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="16.5" cy="12" r="4.4" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="9" cy="10.8" r="1.5" fill="#fff"/><circle cx="18" cy="10.8" r="1.5" fill="#fff"/></svg>
+      </span>Looko
+    </a>
+    <nav class="links" data-b aria-label="Main"><a href="#how">How it works</a><a href="#features">Features</a><a href="#cta">Pricing</a></nav>
+    <a class="btn btn-ghost" href="#cta" data-b>Sign in</a>
+  </header>
+
+  <div class="wrap hero-in">
+    <span class="eyebrow" data-b><span class="dot"></span>AI chart analyzer · public beta</span>
+    <h1 class="h1"><span class="ln" data-b="type">Upload a chart.</span><span class="ln accent" data-b="type">See the next move.</span></h1>
+    <p class="lead" data-b="type">Drop a screenshot from TradingView, MT5 or your broker app. Looko reads the price action and hands you a plan: direction, entry, stop loss and take profit.</p>
+    <div class="ctas">
+      <a class="btn btn-primary lg" href="#cta" data-b>Analyze my chart
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ghost lg" href="#dash" data-b>See a sample read</a>
+    </div>
+    <ul class="trust" data-b><li>TradingView</li><li>MT4 / MT5</li><li>Any broker screenshot</li><li>English + <span class="ml">മലയാളം</span></li></ul>
+  </div>
+
+  <div class="hint" aria-hidden="true"><span class="mouse"></span>Scroll — the agents are waiting to build this page</div>
+</section>
+
+<!-- 2 · MOCK DASHBOARD -->
+<section class="sec" id="dash" data-name="Chart">
+  <span class="built" aria-hidden="true">✓ Built</span>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker" data-b>Sample analysis</span>
+      <h2 class="h2" data-b="type">One screenshot in. A full trade plan out.</h2>
+    </div>
+    <div class="dash">
+      <div class="card chart-card" data-b>
+        <div class="cc-head">
+          <div class="pair" data-b><span class="sym">XAUUSD</span><span class="tf">M15</span><span class="file">chart_0412.png</span></div>
+          <div class="seg" data-b><span>Scalp</span><span class="on">Intraday</span><span>Swing</span></div>
+        </div>
+        <div class="chart-area">
+          <div class="candles" data-b="candles">
+            <svg id="chartSvg" viewBox="0 0 640 300" preserveAspectRatio="none" role="img" aria-label="Gold 15-minute candlestick chart: a dip to 2,386 followed by higher lows and a pullback to 2,391"></svg>
+          </div>
+          <div class="lvl en" data-lvl="entry" data-b="line" data-gap="0.75"><i class="lvl-line"></i><span class="lvl-tag">ENTRY 2,391.40</span></div>
+          <div class="lvl sl" data-lvl="sl" data-b="line"><i class="lvl-line"></i><span class="lvl-tag">SL 2,383.90</span></div>
+          <div class="lvl tp" data-lvl="tp1" data-b="line"><i class="lvl-line"></i><span class="lvl-tag">TP1 2,402.60</span></div>
+          <div class="lvl tp" data-lvl="tp2" data-b="line"><i class="lvl-line"></i><span class="lvl-tag">TP2 2,410.80</span></div>
+        </div>
+      </div>
+
+      <aside class="card side" data-b>
+        <div class="sig-row">
+          <div class="sig">
+            <span class="pill buy" data-b>▲ BUY</span>
+            <small>Bullish continuation · M15</small>
+          </div>
+          <div class="ring" data-b="ring">
+            <svg viewBox="0 0 80 80" aria-hidden="true"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" cx="40" cy="40" r="34"/></svg>
+            <div class="ring-txt"><b><span data-count="68">68</span>%</b><small>confidence</small></div>
+          </div>
+        </div>
+        <ul class="plan" data-b>
+          <li>Entry <b class="c-blue" data-count="2391.40" data-from="2340" data-dec="2">2,391.40</b></li>
+          <li>Stop loss <b class="c-red" data-count="2383.90" data-from="2340" data-dec="2">2,383.90</b></li>
+          <li>Take profit 1 <b class="c-green" data-count="2402.60" data-from="2340" data-dec="2">2,402.60</b></li>
+          <li>Take profit 2 <b class="c-green" data-count="2410.80" data-from="2340" data-dec="2">2,410.80</b></li>
+          <li>Risk : reward <b>1 : <span data-count="2.6" data-dec="1">2.6</span></b></li>
+        </ul>
+        <p class="why" data-b><strong>AI read:</strong> Higher low held at the 2,386 demand zone, then a bullish engulfing closed above the 5-SMA. Momentum favours a push to the 2,402 high.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · HOW IT WORKS -->
+<section class="sec" id="how" data-name="Steps">
+  <span class="built" aria-hidden="true">✓ Built</span>
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="kicker" data-b>How it works</span>
+      <h2 class="h2" data-b="type">Three steps. About three seconds.</h2>
+    </div>
+    <div class="steps">
+      <article class="card step" data-b>
+        <div class="step-top"><span class="ico" data-b><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3.5A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5V15"/></svg></span><span class="num">01</span></div>
+        <h3>Upload screenshot</h3>
+        <p>Paste, drag or snap any chart: candles, line or Heikin Ashi, on any timeframe.</p>
+        <div class="mini" data-b><div class="file-chip"><span>▣</span>chart_0412.png · 248 KB<span class="ok">✓</span></div></div>
+      </article>
+      <span class="arrow" data-b aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      <article class="card step" data-b>
+        <div class="step-top"><span class="ico" data-b><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="num">02</span></div>
+        <h3>AI reads the chart</h3>
+        <p>Looko maps structure, key levels and candle patterns the way a price-action trader would.</p>
+        <div class="mini chips" data-b><span class="chip">HH</span><span class="chip">HL</span><span class="chip g">BOS ↑</span><span class="chip">Demand 2,386</span></div>
+      </article>
+      <span class="arrow" data-b aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      <article class="card step" data-b>
+        <div class="step-top"><span class="ico g" data-b><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></span><span class="num">03</span></div>
+        <h3>Get entry, SL, TP</h3>
+        <p>A clear plan with the reasoning behind it, so you can agree, adjust or skip.</p>
+        <div class="mini rows" data-b><div class="e"><span>ENTRY</span><span>2,391.40</span></div><div class="s"><span>SL</span><span>2,383.90</span></div><div class="t"><span>TP1 / TP2</span><span>2,402.60 / 2,410.80</span></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · FEATURES -->
+<section class="sec" id="features" data-name="Features">
+  <span class="built" aria-hidden="true">✓ Built</span>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker" data-b>Features</span>
+      <h2 class="h2" data-b="type">Everything the chart says, in plain words.</h2>
+    </div>
+    <div class="grid">
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v4m0 10v4M17 3v6m0 8v4"/><rect x="5" y="7" width="4" height="10" rx="1"/><rect x="15" y="9" width="4" height="8" rx="1"/></svg></span><h3>Price-action reading</h3></div>
+        <p>Engulfings, pin bars, breaks of structure and liquidity sweeps, spotted and named.</p>
+        <div class="fviz chips" data-b><span class="chip">Engulfing</span><span class="chip">Pin bar</span><span class="chip g">BOS</span><span class="chip">Sweep</span></div>
+      </article>
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 18h18"/><path d="M5 15l4-6 4 4 6-6"/></svg></span><h3>Support &amp; resistance</h3></div>
+        <p>Zones drawn where price actually reacted, not just round numbers.</p>
+        <div class="fviz" data-b>
+          <svg class="sr" viewBox="0 0 300 46" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="2" width="300" height="10" rx="3" fill="#FDECEC"/><rect x="0" y="34" width="300" height="10" rx="3" fill="#E7F6EF"/><polyline points="0,30 30,38 60,16 90,8 120,22 150,38 180,26 210,9 240,20 270,37 300,24" fill="none" stroke="#2B44F0" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+        </div>
+      </article>
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico g"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z"/></svg></span><h3>Risk : reward built in</h3></div>
+        <p>Every idea comes with its stop, its targets and the maths between them.</p>
+        <div class="fviz" data-b><div class="rr"><i class="rk"></i><i class="rw"></i></div><div class="rr-l"><span>Risk 7.5</span><b>1 : <span data-count="2.6" data-dec="1">2.6</span></b><span>Reward 19.4</span></div></div>
+      </article>
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h8M8 3v2m3 0c-1 5-4 8-7 9m2-5c1.5 2 3.5 3.5 6 4M13 21l4-9 4 9m-6.5-3h5"/></svg></span><h3>English + Malayalam</h3></div>
+        <p>Read the explanation in the language you think in.</p>
+        <div class="fviz lang" data-b><div><span>EN</span>Buyers are defending 2,388 support.</div><div><span>ML</span><em class="ml" style="font-style:normal">2,388 സപ്പോർട്ടിൽ വാങ്ങുന്നവർ ശക്തമാണ്.</em></div></div>
+      </article>
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h3>Scalp, intraday or swing</h3></div>
+        <p>Pick your style and the levels, targets and wording adapt to it.</p>
+        <div class="fviz" data-b><div class="seg modes"><span>Scalp<small>M1–M5</small></span><span class="on">Intraday<small>M15–H1</small></span><span>Swing<small>H4–D1</small></span></div></div>
+      </article>
+      <article class="card feat" data-b>
+        <div class="feat-h"><span class="ico g"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 1116 0"/><path d="M12 16l4-5"/></svg></span><h3>Honest confidence</h3></div>
+        <p>A score that says how clean the setup is, and when to sit on your hands.</p>
+        <div class="fviz" data-b><div class="meter"><i></i></div><div class="meter-l"><span>Setup quality</span><b><span data-count="68">68</span>%</b></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · CTA -->
+<section class="sec" id="cta" data-name="CTA">
+  <span class="built" aria-hidden="true">✓ Built</span>
+  <div class="wrap">
+    <div class="cta" data-b>
+      <span class="kicker" data-b>Free to start</span>
+      <h2 class="h2" data-b="type">Your next chart is already on your screen.</h2>
+      <p class="cta-sub" data-b>Upload it. Looko will tell you what it sees, and where the idea would be wrong.</p>
+      <a class="btn btn-primary lg" href="#top" data-b>Try Looko free
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <p class="nfa" data-b>Not financial advice. Looko's analysis is probabilistic and for education only. Markets can move against any setup, so always manage your own risk.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">© 2026 Looko · Built by agents, one layer at a time.</footer>
+
+<div class="toast" id="toast" aria-hidden="true">✓ Built</div>
+<div class="status" role="status" aria-live="off">
+  <span class="pulse" aria-hidden="true"></span>
+  <span><b id="stAgents">8</b> agents</span><span class="sep">|</span>
+  <span><b id="stLayers">0</b> layers</span><span class="sep">|</span>
+  <span id="stState">Waiting for scroll…</span>
+  <span class="st-chips" id="stChips"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const root = document.documentElement;
+  const markReady = () => root.classList.add('ready');
+
+  /* deterministic random */
+  const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const fmt = (v, d) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  /* ================= chart ================= */
+  const LEVELS = { tp2: 2410.80, tp1: 2402.60, entry: 2391.40, sl: 2383.90 };
+  const P_MAX = 2416, P_MIN = 2378, VB_H = 300;
+  const yOf = p => (P_MAX - p) / (P_MAX - P_MIN) * VB_H;
+
+  (function drawChart() {
+    const svg = $('#chartSvg'); if (!svg) return;
+    const R = rng(11);
+    const path = [[0, 2398.4], [14, 2386.6], [30, 2397.2], [41, 2391.6]];
+    const mid = i => { for (let k = 0; k < path.length - 1; k++) { const [a, pa] = path[k], [b, pb] = path[k + 1]; if (i <= b) return pa + (pb - pa) * (i - a) / (b - a); } return path[path.length - 1][1]; };
+    const N = 42, step = 520 / N, bw = step * 0.58;
+    let prev = 2398.9, out = '', closes = [], xs = [];
+    // faint price grid
+    for (let p = 2380; p <= 2415; p += 5) out += `<line x1="0" x2="640" y1="${yOf(p)}" y2="${yOf(p)}" stroke="#E6E9F0" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+    let candles = '';
+    for (let i = 0; i < N; i++) {
+      const o = prev;
+      const c = i === N - 1 ? 2391.6 : mid(i) + (R() - 0.5) * 2.6;
+      const h = Math.max(o, c) + R() * 1.5 + 0.2;
+      const l = Math.max(Math.min(o, c) - R() * 1.5 - 0.2, Math.min(o, c, 2384.7));
+      prev = c; closes.push(c);
+      const x = 10 + i * step + step / 2; xs.push(x);
+      const col = c >= o ? '#0F9D63' : '#E0464E';
+      const yT = yOf(Math.max(o, c)), yB = yOf(Math.min(o, c));
+      candles += `<g class="cdl"><line x1="${x}" x2="${x}" y1="${yOf(h)}" y2="${yOf(l)}" stroke="${col}" stroke-width="1.3" vector-effect="non-scaling-stroke"/><rect x="${x - bw / 2}" y="${yT}" width="${bw}" height="${Math.max(1.4, yB - yT)}" rx="1" fill="${col}"/></g>`;
+    }
+    let d = '';
+    closes.forEach((_, i) => { if (i < 4) return; const sma = closes.slice(i - 4, i + 1).reduce((a, b) => a + b, 0) / 5; d += (d ? ' L' : 'M') + xs[i].toFixed(1) + ' ' + yOf(sma).toFixed(1); });
+    out += `<defs><clipPath id="maClip"><rect id="maClipRect" x="0" y="0" width="640" height="300"/></clipPath></defs>`;
+    out += candles;
+    out += `<path class="ma" d="${d}" fill="none" stroke="#2B44F0" stroke-opacity=".55" stroke-width="2" vector-effect="non-scaling-stroke" clip-path="url(#maClip)"/>`;
+    svg.innerHTML = out;
+    $$('.lvl').forEach(el => { el.style.top = (yOf(LEVELS[el.dataset.lvl]) / VB_H * 100) + '%'; });
+  })();
+
+  /* ================= status bar ================= */
+  const secs = $$('main > section.sec');
+  const st = { bar: $('.status'), agents: $('#stAgents'), layers: $('#stLayers'), state: $('#stState'), toast: $('#toast') };
+  const chips = secs.map(s => { const c = document.createElement('span'); c.className = 'chip-s'; c.innerHTML = '<i></i>' + s.dataset.name; $('#stChips').appendChild(c); return c; });
+  const TOTAL_LAYERS = 1347;
+  let prog = secs.map(() => 0), weights = secs.map(() => TOTAL_LAYERS / secs.length), wasDone = secs.map(() => false), toasts = false;
+
+  function toast(name) {
+    if (!toasts || !window.gsap) return;
+    st.toast.textContent = '✓ Built · ' + name;
+    gsap.killTweensOf(st.toast);
+    gsap.timeline().fromTo(st.toast, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power3.out' })
+      .to(st.toast, { autoAlpha: 0, y: -4, duration: .3, ease: 'power2.in' }, '+=1.1');
+  }
+  function render() {
+    const layers = Math.round(prog.reduce((s, p, i) => s + p * weights[i], 0));
+    st.layers.textContent = layers.toLocaleString('en-US');
+    const done = prog.map(p => p >= 0.995);
+    done.forEach((d, i) => {
+      chips[i].classList.toggle('ok', d); chips[i].firstChild.textContent = d ? '✓' : '';
+      if (d && !wasDone[i]) toast(secs[i].dataset.name);
+      wasDone[i] = d;
+    });
+    const all = done.every(Boolean), any = prog.some(p => p > 0.002);
+    st.state.textContent = all ? 'Built ✓' : any ? 'Building…' : 'Waiting for scroll…';
+    st.bar.classList.toggle('done', all);
+  }
+  function showFinished() {
+    prog = prog.map(() => 1); wasDone = secs.map(() => true);
+    weights = secs.map(() => TOTAL_LAYERS / secs.length);
+    render(); markReady();
+  }
+
+  /* ================= no GSAP → just show the page ================= */
+  if (!window.gsap || !window.ScrollTrigger) { showFinished(); return; }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* split typed elements into characters once */
+  function splitChars(el) {
+    const chars = [];
+    const walk = node => [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          const w = document.createElement('span'); w.className = 'w'; w.style.cssText = 'display:inline-block;white-space:nowrap';
+          for (const ch of part) { const s = document.createElement('span'); s.textContent = ch; w.appendChild(s); chars.push(s); }
+          frag.appendChild(w);
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) walk(n);
+    });
+    el.setAttribute('aria-label', el.textContent.trim().replace(/\s+/g, ' '));
+    walk(el);
+    el._chars = chars;
+  }
+  $$('[data-b="type"]').forEach(splitChars);
+
+  /* offset of el inside section (ignores transforms) */
+  function offsetIn(el, sec) { let x = 0, y = 0, n = el; while (n && n !== sec) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; } return { x, y }; }
+
+  const AGENTS = [
+    ['Agent 1', '#2B6BFF'], ['Agent 2', '#FF8A1F'], ['Agent 3', '#12B76A'], ['Agent 4', '#F0438A'],
+    ['Agent 5', '#8B5CF6'], ['Agent 6', '#14B8A6'], ['Agent 7', '#F5B70A'], ['Agent 8', '#64748B']
+  ];
+  function makeCursor([name, color]) {
+    const c = document.createElement('div'); c.className = 'cur';
+    c.innerHTML = `<span class="ripple" style="border-color:${color}"></span>` +
+      `<svg class="arrow-i" width="22" height="22" viewBox="0 0 24 24"><path d="M3 2l7.6 19.2 2.7-8 7.9-2.8z" fill="${color}" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>` +
+      `<span class="tag" style="background:${color}">${name}</span>`;
+    return c;
+  }
+
+  const EASE = 'power3.out';
+
+  /* ================= build one section ================= */
+  function buildSection(sec, idx, nAgents, simple) {
+    const R = rng(idx * 977 + 31);
+    const rand = (a, b) => a + (b - a) * R();
+    const W = () => sec.clientWidth, H = () => sec.clientHeight;
+    const items = $$('[data-b]', sec).filter(el => el.offsetParent !== null);
+    const layer = document.createElement('div'); layer.className = 'agents'; layer.setAttribute('aria-hidden', 'true'); sec.appendChild(layer);
+    const wfLayer = document.createElement('div'); layer.appendChild(wfLayer);
+    const tl = gsap.timeline({ paused: true, defaults: { ease: EASE } });
+    const restore = [];
+
+    const agents = AGENTS.slice(0, nAgents).map(a => {
+      const c = makeCursor(a); layer.appendChild(c);
+      return { c, color: a[1], arrow: $('.arrow-i', c), ripple: $('.ripple', c), free: 0.05 + R() * 0.25, used: false, pos: null };
+    });
+
+    const hint = $('.hint', sec);
+    if (hint) tl.fromTo(hint, { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: 14, duration: .35 }, 0);
+
+    const counts = (el, t) => {
+      const list = [el, ...$$('[data-count]', el)].filter(n => n.dataset.count !== undefined && n.closest('[data-b]') === el);
+      list.forEach(n => {
+        const from = +(n.dataset.from || 0), to = +n.dataset.count, dec = +(n.dataset.dec || 0), o = { v: from };
+        restore.push([n, n.textContent]);
+        n.textContent = fmt(from, dec);
+        tl.fromTo(o, { v: from }, { v: to, duration: .85, ease: 'power2.out', immediateRender: false, onUpdate: () => { n.textContent = fmt(o.v, dec); } }, t);
+      });
+    };
+
+    const wfs = [];
+    let lastAct = 0.25, lastDone = 0;
+    const TRAVEL = simple ? .5 : .62;
+
+    items.forEach(el => {
+      const type = el.dataset.b || 'box';
+      const ag = agents.reduce((m, a) => (a.free < m.free ? a : m), agents[0]);
+      const gap = el.dataset.gap ? +el.dataset.gap : rand(.07, .2);
+      const act = Math.max(ag.free + TRAVEL, lastAct + gap);
+      lastAct = act;
+      const fx = rand(.18, .6), fy = rand(.3, .7);
+      const target = type === 'line'
+        ? () => { const o = offsetIn(el, sec); return { x: o.x + 16, y: o.y }; }
+        : () => { const o = offsetIn(el, sec); return { x: o.x + Math.min(el.offsetWidth * fx, 150), y: o.y + Math.min(el.offsetHeight * fy, 48) }; };
+
+      // first job: fly in from off-screen
+      if (!ag.used) {
+        ag.used = true;
+        const side = R() < .5 ? -1 : 1, sy = rand(.1, .9);
+        ag.pos = () => ({ x: side < 0 ? -70 : W() + 70, y: H() * sy });
+        tl.fromTo(ag.c, { autoAlpha: 0 }, { autoAlpha: 1, duration: .18, ease: 'none', immediateRender: false }, act - TRAVEL);
+      }
+      const from = ag.pos;
+      tl.fromTo(ag.c, { x: () => from().x, y: () => from().y }, { x: () => target().x, y: () => target().y, duration: TRAVEL, ease: EASE, immediateRender: false }, act - TRAVEL);
+
+      // click
+      tl.fromTo(ag.arrow, { scale: 1, transformOrigin: '3px 2px' }, { scale: .78, duration: .07, yoyo: true, repeat: 1, ease: 'power1.inOut', immediateRender: false }, act);
+      tl.fromTo(ag.ripple, { scale: .3, autoAlpha: .9 }, { scale: 1.7, autoAlpha: 0, duration: .42, ease: 'power2.out', immediateRender: false }, act);
+
+      // wireframe placeholder
+      let wf = null;
+      if (type !== 'line') {
+        wf = document.createElement('div');
+        wf.className = 'wf' + (type === 'type' ? ' txt' : '');
+        wf.style.borderColor = ag.color;
+        wfLayer.appendChild(wf);
+        wfs.push({ wf, el, type, fx, fy });
+        tl.fromTo(wf, { autoAlpha: 0, scale: .12 }, { autoAlpha: 1, scale: 1, duration: .3, immediateRender: false }, act + .03);
+      }
+
+      let done, newPos = target;
+      if (type === 'type') {
+        const chars = el._chars, d = Math.min(Math.max(chars.length * .028, .35), 1.2);
+        tl.fromTo(el, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01, ease: 'none' }, act + .3);
+        tl.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: .02, ease: 'none', stagger: d / chars.length }, act + .3);
+        tl.fromTo(wf, { autoAlpha: 1 }, { autoAlpha: 0, duration: d, ease: 'none', immediateRender: false }, act + .32);
+        done = act + .3 + d * .55;
+      } else if (type === 'line') {
+        const ln = $('.lvl-line', el), tag = $('.lvl-tag', el);
+        const endPt = () => { const o = offsetIn(el, sec); return { x: o.x + el.offsetWidth * .84, y: o.y }; };
+        tl.fromTo(ln, { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: .62, ease: EASE }, act + .05);
+        tl.fromTo(ag.c, { x: () => target().x, y: () => target().y }, { x: () => endPt().x, y: () => endPt().y, duration: .62, ease: EASE, immediateRender: false }, act + .05);
+        tl.fromTo(tag, { autoAlpha: 0, scale: .5 }, { autoAlpha: 1, scale: 1, duration: .38, ease: 'back.out(2.2)' }, act + .5);
+        newPos = endPt; done = act + .7;
+      } else {
+        tl.fromTo(el, simple ? { autoAlpha: 0, y: 8 } : { autoAlpha: 0, y: 14, scale: .96 },
+          { autoAlpha: 1, y: 0, scale: 1, duration: .45, ease: simple ? EASE : 'back.out(1.6)' }, act + .32);
+        tl.fromTo(wf, { autoAlpha: 1 }, { autoAlpha: 0, duration: .26, ease: 'power1.out', immediateRender: false }, act + .6);
+        counts(el, act + .4);
+        if (type === 'candles') {
+          const cs = $$('.cdl', el);
+          tl.fromTo(cs, { scaleY: 0, transformOrigin: '50% 50%' }, { scaleY: 1, duration: .3, ease: 'back.out(1.7)', stagger: Math.min(.025, 1 / cs.length) }, act + .34);
+          tl.fromTo('#maClipRect', { attr: { width: 0 } }, { attr: { width: 640 }, duration: 1, ease: 'power2.inOut' }, act + .75);
+        }
+        if (type === 'ring') {
+          tl.fromTo($('.ring-fg', el), { strokeDashoffset: 213.63 }, { strokeDashoffset: 68.36, duration: 1, ease: EASE }, act + .38);
+        }
+        done = act + .42;
+      }
+      ag.pos = newPos;
+      ag.free = done + rand(.02, .14);
+      lastDone = Math.max(lastDone, done + .5);
+    });
+
+    // cursors leave once their work is done
+    agents.forEach(ag => {
+      if (!ag.used) return;
+      const from = ag.pos, side = R() < .5 ? -1 : 1, ey = rand(.1, .9);
+      tl.fromTo(ag.c, { x: () => from().x, y: () => from().y, autoAlpha: 1 },
+        { x: () => (side < 0 ? -90 : W() + 90), y: () => H() * ey, autoAlpha: 0, duration: .7, ease: 'power2.in', immediateRender: false }, ag.free + .12);
+      lastDone = Math.max(lastDone, ag.free + .82);
+    });
+
+    const badge = $('.built', sec);
+    if (badge) tl.fromTo(badge, { autoAlpha: 0, scale: .6 }, { autoAlpha: 1, scale: 1, duration: .32, ease: 'back.out(2.4)' }, lastDone);
+    tl.to({}, { duration: .25 });
+
+    function layout() {
+      wfs.forEach(w => {
+        const o = offsetIn(w.el, sec), ww = w.el.offsetWidth, hh = w.el.offsetHeight, s = w.wf.style;
+        s.left = o.x + 'px'; s.top = o.y + 'px'; s.width = ww + 'px'; s.height = hh + 'px';
+        s.transformOrigin = `${Math.min(ww * w.fx, 150)}px ${Math.min(hh * w.fy, 48)}px`;
+        if (w.type === 'type') {
+          const cs = getComputedStyle(w.el);
+          const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2, a = lh * .2, b = a + lh * .58;
+          s.backgroundImage = `repeating-linear-gradient(to bottom,transparent 0 ${a}px,rgba(14,22,48,.11) ${a}px ${b}px,transparent ${b}px ${lh}px)`;
+          s.borderRadius = '6px';
+        } else {
+          s.borderRadius = getComputedStyle(w.el).borderRadius;
+        }
+      });
+    }
+
+    return {
+      tl, layout, items: items.length,
+      destroy() { layer.remove(); restore.forEach(([n, t]) => { n.textContent = t; }); }
+    };
+  }
+
+  /* ================= wire everything up ================= */
+  const mm = gsap.matchMedia();
+  // 'any' always matches so the callback also runs on small screens (matchMedia only fires when a condition matches)
+  mm.add({ any: 'all', reduce: '(prefers-reduced-motion: reduce)', big: '(min-width: 900px)' }, ctx => {
+    const { reduce, big } = ctx.conditions;
+    if (reduce) { showFinished(); return; }
+
+    const nAgents = big ? 8 : 4, simple = !big, PX = big ? 230 : 190;
+    st.agents.textContent = nAgents;
+    prog = secs.map(() => 0); wasDone = secs.map(() => false); toasts = true;
+
+    const built = secs.map((sec, i) => buildSection(sec, i, nAgents, simple));
+
+    // layer budget per section, proportional to the work in it; sums to TOTAL_LAYERS
+    const sumItems = built.reduce((s, b) => s + b.items, 0);
+    let acc = 0;
+    weights = built.map((b, i) => { if (i === built.length - 1) return TOTAL_LAYERS - acc; const w = Math.round(TOTAL_LAYERS * b.items / sumItems); acc += w; return w; });
+
+    built.forEach((b, i) => {
+      const sec = secs[i];
+      const fits = sec.offsetHeight <= window.innerHeight + 4;
+      const pin = fits && (big || i === 0 || i === secs.length - 1);
+      const conf = { trigger: sec, animation: b.tl, scrub: simple ? .4 : .8, invalidateOnRefresh: true };
+      if (pin) Object.assign(conf, { pin: true, start: 'top top', end: () => '+=' + Math.round(b.tl.duration() * PX), anticipatePin: 1 });
+      else if (i === 0) Object.assign(conf, { start: 'top top', end: () => '+=' + Math.round(b.tl.duration() * PX) });
+      else Object.assign(conf, { start: 'top 82%', end: 'bottom 78%' });
+      ScrollTrigger.create(conf);
+      b.tl.eventCallback('onUpdate', () => { prog[i] = b.tl.progress(); render(); });
+    });
+
+    const relayout = () => built.forEach(b => b.layout());
+    relayout();
+    ScrollTrigger.addEventListener('refresh', relayout);
+    render();
+    markReady();
+
+    return () => {
+      ScrollTrigger.removeEventListener('refresh', relayout);
+      built.forEach(b => b.destroy());
+      toasts = false;
+    };
+  });
+
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+})();
+</script>
+</body>
+</html>
