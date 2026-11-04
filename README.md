@@ -39,6 +39,28 @@ A transparent ATR breakout scalper for gold on the 1-minute chart. Every rule is
 
 All values are inputs. Backtest in the Strategy Tester ("Every tick based on real ticks") and run on demo before going live.
 
+### `Experts/GoldSessionBreakout.mq5` — XAU/USD Asian-range breakout
+
+Trades the breakout of the quiet Asian session into the London/New York sessions. One trade per day at most, no grid or martingale. Works on any chart timeframe (the range is read from M5 data).
+
+**Entry**
+- Range = high/low of 00:00–07:00 server time
+- At 07:00 a buy-stop is placed 50 points above the range and a sell-stop 50 points below (OCO: when one fills, the other is deleted)
+- Day is skipped if the range is narrower than 300 or wider than 2500 points, or if price has already broken out
+- Optional trend filter: only buys above the H1 200 EMA, only sells below it
+
+**Exits**
+- Stop loss at the far side of the range, capped at 1500 points; take profit 1.5× the stop distance
+- Breakeven (+20 points) once the trade is 1R in profit
+- Untriggered orders deleted at 16:00; any open trade closed at 21:00
+
+**Risk controls**
+- Position size = 1% of balance at the stop (skips the day if the minimum lot would risk more)
+- Max spread 40 points when placing orders; option to skip Fridays
+- Remembers if it already traded today, even after a terminal restart
+
+Hours are **server time** — check your broker's clock (many use GMT+2/+3) and shift them so the range covers the Asian session.
+
 ## Installation
 
 1. Copy the EA file to your MetaTrader 5 `Experts` folder
