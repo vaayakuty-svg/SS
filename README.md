@@ -39,6 +39,27 @@ A transparent ATR breakout scalper for gold on the 1-minute chart. Every rule is
 
 All values are inputs. Backtest in the Strategy Tester ("Every tick based on real ticks") and run on demo before going live.
 
+### `Experts/GoldBasketV3.mq5` — XAU/USD M1 Grid-Basket Scalper
+
+Written from scratch to work like the "Gold V3 MT5" EA shown in the @goldv3mt5 Instagram reels. Its source isn't public, so this copies only what the recordings show: XAUUSD M1 strategy-tester runs, a grid step of about $2.21, lots going up 0.01, 0.01, 0.02, 0.02, 0.03, 0.05, 0.08, 0.11, separate buy and sell baskets, no stop loss per order, and each basket closed all at once at a net profit.
+
+**Entry (first order of a basket, checked on each closed M1 bar)**
+- Buy: close above the 200 EMA, 9 EMA above 21 EMA and rising, bullish candle closing above the 9 EMA, RSI(14) > 52
+- Sell: the mirror image (RSI < 48)
+
+**Grid**
+- Adds an order each time price moves `InpGridStepPrice` (default 2.21) against the newest order
+- Lot per level comes from `InpLotSequence` (the default copies the observed martingale sequence); `InpLotScale` scales it
+- Max 8 orders per basket. Buy and sell baskets run separately (`InpHedgeMode`)
+
+**Exit**
+- Basket take profit = total lots × `InpTPPerLot` (default: 0.01 lot → 1.00), at least `InpMinTPMoney`
+- **Safety stops the original doesn't appear to have:** basket money stop (default 100) and basket drawdown stop (default 5% of balance). Setting both to 0 makes it work like the original with no stop. That is how martingale grids wipe out accounts.
+
+**Filters:** max spread 40 points, trading hours 02–22 server time, daily loss limit 5%, max 200 baskets per day.
+
+> A martingale grid wins small amounts often and loses big amounts rarely. A strong one-way gold move of $15–20 fills all 8 levels (0.33 lots). Backtest with "Every tick based on real ticks" over months, not one day like the reels, and run on demo first.
+
 ## Installation
 
 1. Copy the EA file to your MetaTrader 5 `Experts` folder
