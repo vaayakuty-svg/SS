@@ -19,9 +19,9 @@ for i, line in enumerate(TL["vo"]):
 n = len(TL["vo"])
 inputs += ["-i", os.path.join(HERE, "music.wav")]
 filters.append(f"{''.join(labels)}amix=inputs={n}:normalize=0,pan=stereo|c0=c0|c1=c0,atrim=0:{TL['duration']},volume=1.6,asplit=2[vo][vosc]")
-filters.append(f"[{n}:a]volume=0.85[mus]")
+filters.append(f"[{n}:a]volume=0.85,apad[mus]")
 filters.append("[mus][vosc]sidechaincompress=threshold=0.04:ratio=5:attack=20:release=350:makeup=1[duck]")
-filters.append("[duck][vo]amix=inputs=2:normalize=0,alimiter=limit=0.89,loudnorm=I=-14:TP=-1.0:LRA=11[out]")
+filters.append("[duck][vo]amix=inputs=2:normalize=0,alimiter=limit=0.89,loudnorm=I=-14:TP=-1.0:LRA=11,apad[out]")
 out = os.path.join(HERE, "mix.wav")
 subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex", ";".join(filters), "-map", "[out]", "-ar", "48000", "-t", str(TL["duration"]), out], check=True)
 print("wrote", out)
