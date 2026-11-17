@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIN Decoder</title>
+<meta name="description" content="Decode and analyze any 17-character Vehicle Identification Number: make, model, year, body type, engine, plant and more.">
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --surface-2: #f0f2f5; --text: #15181e; --muted: #5d6573;
+    --border: #dfe3e9; --accent: #1f6feb; --accent-ink: #ffffff; --ok: #1a7f37; --bad: #c62828; --warn: #9a6700;
+    --seg1: #1f6feb; --seg2: #8250df; --seg3: #bf5700; --seg4: #1a7f37; --seg5: #cf222e; --seg6: #0e7490;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116; --surface: #161b22; --surface-2: #1d232c; --text: #e6edf3; --muted: #9aa4b2;
+      --border: #2b323c; --accent: #4493f8; --accent-ink: #0b0f14; --ok: #3fb950; --bad: #f85149; --warn: #d29922;
+      --seg1: #4493f8; --seg2: #a371f7; --seg3: #f0883e; --seg4: #3fb950; --seg5: #ff7b72; --seg6: #39c5cf;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #161b22; --surface-2: #1d232c; --text: #e6edf3; --muted: #9aa4b2;
+    --border: #2b323c; --accent: #4493f8; --accent-ink: #0b0f14; --ok: #3fb950; --bad: #f85149; --warn: #d29922;
+    --seg1: #4493f8; --seg2: #a371f7; --seg3: #f0883e; --seg4: #3fb950; --seg5: #ff7b72; --seg6: #39c5cf;
+    --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 40px 0 24px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 640px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .search { padding: 20px; }
+  .search form { display: flex; gap: 10px; flex-wrap: wrap; }
+  .search input {
+    flex: 1 1 320px; min-width: 0; padding: 12px 14px; font-size: 18px; letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text);
+  }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font: inherit; cursor: pointer; border-radius: 8px; padding: 10px 18px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text);
+  }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .6; cursor: default; }
+  .hint { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .hint a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .count.ok { color: var(--ok); } .count.bad { color: var(--bad); }
+
+  #status { margin: 16px 0 0; font-size: 14px; }
+  #status.error { color: var(--bad); }
+  #results { display: none; margin: 20px 0 48px; }
+
+  .hero { padding: 22px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .hero h2 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+  .hero .sub { color: var(--muted); margin-top: 4px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); }
+  .badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .badge.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+  .badge.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions button { padding: 8px 12px; font-size: 13px; }
+
+  .anatomy { padding: 20px 22px; margin-top: 16px; }
+  .anatomy h3, .section h3 { margin: 0 0 14px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .chars { display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 4px; }
+  .ch { text-align: center; border-radius: 6px; padding: 8px 0 4px; border-bottom: 3px solid; background: var(--surface-2); }
+  .ch b { display: block; font-size: 20px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .ch span { font-size: 10px; color: var(--muted); }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 16px; }
+  .leg { border-left: 4px solid; padding: 6px 10px; background: var(--surface-2); border-radius: 0 6px 6px 0; }
+  .leg .t { font-size: 12px; color: var(--muted); }
+  .leg .v { font-weight: 600; }
+  .leg .d { font-size: 13px; color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+  .section { padding: 18px 20px; }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(120px, 42%) 1fr; gap: 0; }
+  dt, dd { padding: 7px 0; border-bottom: 1px solid var(--border); margin: 0; }
+  dt { color: var(--muted); font-size: 14px; padding-right: 10px; }
+  dd { font-weight: 500; overflow-wrap: anywhere; }
+  dl > :nth-last-child(-n+2) { border-bottom: 0; }
+  .empty { color: var(--muted); font-size: 14px; }
+
+  .all { padding: 18px 20px; margin-top: 16px; }
+  .all-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .all-head h3 { margin: 0; }
+  .all-head input { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; min-width: 0; flex: 0 1 260px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  td:first-child { color: var(--muted); width: 40%; }
+
+  .history { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .chip { font: 12px ui-monospace, Menlo, Consolas, monospace; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; }
+
+  footer { color: var(--muted); font-size: 13px; padding: 24px 0 40px; border-top: 1px solid var(--border); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 23px; }
+    .chars { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+    .ch b { font-size: 17px; }
+    dl { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>VIN Decoder &amp; Vehicle Analyzer</h1>
+    <p>Enter a 17-character Vehicle Identification Number to see the make, model, model year, body type, engine, transmission, plant, safety equipment and every other field encoded for that vehicle.</p>
+  </header>
+
+  <section class="card search">
+    <form id="form" autocomplete="off">
+      <input id="vin" class="mono" maxlength="17" placeholder="e.g. 1HGCM82633A004352" aria-label="VIN" spellcheck="false">
+      <button class="primary" id="go" type="submit">Decode VIN</button>
+    </form>
+    <div class="hint">
+      <span><span id="count" class="count">0 / 17</span> &middot; letters I, O and Q are never used in a VIN</span>
+      <span>Try: <a data-vin="1HGCM82633A004352">Honda</a> &middot; <a data-vin="5YJ3E1EA2JF000316">Tesla</a> &middot; <a data-vin="1FTFW1ET9DFC10312">Ford</a> &middot; <a data-vin="WBA3A5C53CF256551">BMW</a></span>
+    </div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <div id="status" role="status"></div>
+
+  <main id="results">
+    <section class="card hero">
+      <div>
+        <div class="mono" id="r-vin" style="color:var(--muted);letter-spacing:.1em"></div>
+        <h2 id="r-title"></h2>
+        <div class="sub" id="r-sub"></div>
+        <div class="badges" id="r-badges"></div>
+      </div>
+      <div class="actions">
+        <button id="copy">Copy report</button>
+        <button id="json">Download JSON</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </section>
+
+    <section class="card anatomy">
+      <h3>VIN anatomy</h3>
+      <div class="chars" id="chars"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="grid" id="sections"></div>
+
+    <section class="card all">
+      <div class="all-head">
+        <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">All decoded fields <span id="all-count"></span></h3>
+        <input id="filter" placeholder="Filter fields…" aria-label="Filter fields">
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody id="all-body"></tbody></table></div>
+    </section>
+  </main>
+
+  <footer>
+    Vehicle details come from the U.S. NHTSA vPIC database (free public API). VIN structure, check digit, region, country and year are analyzed locally in your browser.
+    Coverage is best for vehicles sold in North America; for other markets the local analysis still works but some fields may be missing.
+  </footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- Local VIN analysis ---------- */
+  const TRANSLIT = { A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,J:1,K:2,L:3,M:4,N:5,P:7,R:9,S:2,T:3,U:4,V:5,W:6,X:7,Y:8,Z:9 };
+  const WEIGHTS = [8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
+  const YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789";
+
+  const val = (c) => /\d/.test(c) ? +c : TRANSLIT[c];
+
+  function checkDigit(vin) {
+    let sum = 0;
+    for (let i = 0; i < 17; i++) sum += val(vin[i]) * WEIGHTS[i];
+    const r = sum % 11;
+    return r === 10 ? "X" : String(r);
+  }
+
+  function modelYears(vin) {
+    const idx = YEAR_CODES.indexOf(vin[9]);
+    if (idx < 0) return [];
+    const a = 1980 + idx, b = a + 30;
+    // North American convention: position 7 numeric => 1980-2009 cycle, letter => 2010-2039
+    if (/\d/.test(vin[6])) return [a];
+    if (/[A-Z]/.test(vin[6])) return [b];
+    return [a, b];
+  }
+
+  function region(c) {
+    if ("ABCDEFGH".includes(c)) return "Africa";
+    if ("JKLMNPR".includes(c)) return "Asia";
+    if ("STUVWXYZ".includes(c)) return "Europe";
+    if ("12345".includes(c)) return "North America";
+    if ("67".includes(c)) return "Oceania";
+    if ("89".includes(c)) return "South America";
+    return "Unknown";
+  }
+
+  // [first char, second-char range start, end, country]
+  const COUNTRY_RANGES = [
+    ["A","A","H","South Africa"],["A","J","N","Ivory Coast"],["B","A","E","Angola"],["B","F","K","Kenya"],["B","L","R","Tanzania"],
+    ["C","A","E","Benin"],["C","F","K","Madagascar"],["C","L","R","Tunisia"],["D","A","E","Egypt"],["D","F","K","Morocco"],["D","L","R","Zambia"],
+    ["E","A","E","Ethiopia"],["E","F","K","Mozambique"],["F","A","E","Ghana"],["F","F","K","Nigeria"],
+    ["J","A","Z","Japan"],["J","0","9","Japan"],["K","A","E","Sri Lanka"],["K","F","K","Israel"],["K","L","R","South Korea"],["K","S","Z","Kazakhstan"],["K","0","9","Kazakhstan"],
+    ["L","A","Z","China"],["L","0","9","China"],["M","A","E","India"],["M","F","K","Indonesia"],["M","L","R","Thailand"],["M","S","Z","Myanmar"],
+    ["N","A","E","Iran"],["N","F","K","Pakistan"],["N","L","R","Turkey"],["P","A","E","Philippines"],["P","F","K","Singapore"],["P","L","R","Malaysia"],
+    ["R","A","E","United Arab Emirates"],["R","F","K","Taiwan"],["R","L","R","Vietnam"],["R","S","Z","Saudi Arabia"],
+    ["S","A","M","United Kingdom"],["S","N","T","Germany (East)"],["S","U","Z","Poland"],["S","1","4","Latvia"],
+    ["T","A","H","Switzerland"],["T","J","P","Czech Republic"],["T","R","V","Hungary"],["T","W","Z","Portugal"],["T","1","1","Portugal"],
+    ["U","H","M","Denmark"],["U","N","T","Ireland"],["U","U","Z","Romania"],["U","5","7","Slovakia"],
+    ["V","A","E","Austria"],["V","F","R","France"],["V","S","W","Spain"],["V","X","2","Serbia"],["V","3","5","Croatia"],["V","6","0","Estonia"],
+    ["W","A","Z","Germany"],["W","0","9","Germany"],["X","A","E","Bulgaria"],["X","F","K","Greece"],["X","L","R","Netherlands"],["X","S","W","Russia"],["X","X","2","Luxembourg"],["X","3","0","Russia"],
+    ["Y","A","E","Belgium"],["Y","F","K","Finland"],["Y","L","R","Malta"],["Y","S","W","Sweden"],["Y","X","2","Norway"],["Y","3","5","Belarus"],["Y","6","0","Ukraine"],
+    ["Z","A","R","Italy"],["Z","X","2","Slovenia"],["Z","3","5","Lithuania"],
+    ["1","A","Z","United States"],["1","0","9","United States"],["4","A","Z","United States"],["4","0","9","United States"],["5","A","Z","United States"],["5","0","9","United States"],
+    ["2","A","Z","Canada"],["2","0","9","Canada"],["3","A","W","Mexico"],["3","X","7","Costa Rica"],["3","8","0","Cayman Islands"],
+    ["6","A","W","Australia"],["7","A","E","New Zealand"],["8","A","E","Argentina"],["8","F","K","Chile"],["8","L","R","Ecuador"],["8","S","W","Peru"],["8","X","2","Venezuela"],
+    ["9","A","E","Brazil"],["9","F","K","Colombia"],["9","L","R","Paraguay"],["9","S","W","Uruguay"],["9","X","2","Trinidad & Tobago"],["9","3","9","Brazil"]
+  ];
+  const ORDER = "ABCDEFGHJKLMNPRSTUVWXYZ1234567890";
+  function country(vin) {
+    const a = vin[0], b = ORDER.indexOf(vin[1]);
+    for (const [f, s, e, name] of COUNTRY_RANGES) {
+      if (f !== a) continue;
+      const si = ORDER.indexOf(s), ei = ORDER.indexOf(e);
+      if (b >= si && b <= ei) return name;
+    }
+    return null;
+  }
+
+  const WMI = {
+    "1HG":"Honda (USA)","1HF":"Honda motorcycles (USA)","JHM":"Honda (Japan)","2HG":"Honda (Canada)","5FN":"Honda (USA, trucks/SUVs)","19X":"Honda (USA)",
+    "JH4":"Acura (Japan)","19U":"Acura (USA)","1FA":"Ford (USA, cars)","1FT":"Ford (USA, trucks)","1FM":"Ford (USA, MPV/SUV)","1FD":"Ford (USA, incomplete)","3FA":"Ford (Mexico)","WF0":"Ford (Germany)",
+    "1LN":"Lincoln (USA)","5LM":"Lincoln (USA, SUV)","1G1":"Chevrolet (USA)","1GC":"Chevrolet (USA, trucks)","1GN":"Chevrolet (USA, SUV)","2G1":"Chevrolet (Canada)","3G1":"Chevrolet (Mexico)","KL1":"Chevrolet (South Korea)",
+    "1GT":"GMC (USA, trucks)","1GK":"GMC (USA, SUV)","1G6":"Cadillac (USA)","1GY":"Cadillac (USA)","1G4":"Buick (USA)","1C3":"Chrysler (USA)","2C3":"Chrysler (Canada)","1C4":"Jeep / Chrysler (USA, MPV)",
+    "1J4":"Jeep (USA)","1C6":"Ram (USA, trucks)","3C6":"Ram (Mexico)","1B3":"Dodge (USA)","2B3":"Dodge (Canada)","1D7":"Dodge (USA, trucks)","2C4":"Chrysler / Dodge (Canada, MPV)",
+    "4T1":"Toyota (USA, Kentucky)","4T3":"Toyota (USA, SUV)","5TD":"Toyota (USA, MPV)","5TF":"Toyota (USA, trucks)","JTD":"Toyota (Japan)","JTE":"Toyota (Japan, MPV)","JTN":"Toyota (Japan)","2T1":"Toyota (Canada)","JT2":"Toyota (Japan)",
+    "JTH":"Lexus (Japan)","2T2":"Lexus (Canada)","1N4":"Nissan (USA)","1N6":"Nissan (USA, trucks)","5N1":"Nissan (USA, SUV)","JN1":"Nissan (Japan)","JN8":"Nissan (Japan, SUV)","3N1":"Nissan (Mexico)","JNK":"Infiniti (Japan)",
+    "KMH":"Hyundai (South Korea)","5NP":"Hyundai (USA)","KM8":"Hyundai (South Korea, SUV)","KNA":"Kia (South Korea)","KND":"Kia (South Korea, MPV)","5XY":"Kia (USA)","3KP":"Kia (Mexico)","KMT":"Genesis (South Korea)",
+    "JM1":"Mazda (Japan)","JM3":"Mazda (Japan, MPV)","JF1":"Subaru (Japan)","JF2":"Subaru (Japan, MPV)","4S3":"Subaru (USA)","4S4":"Subaru (USA, MPV)","JA3":"Mitsubishi (Japan)","JA4":"Mitsubishi (Japan, MPV)","JS1":"Suzuki motorcycles (Japan)","JS2":"Suzuki (Japan)",
+    "5YJ":"Tesla (USA, Fremont)","7SA":"Tesla (USA)","LRW":"Tesla (China)","XP7":"Tesla (Germany)","7G2":"Tesla (USA, Semi)","WBA":"BMW (Germany)","WBS":"BMW M (Germany)","WBY":"BMW i (Germany)","5UX":"BMW (USA, SUV)","5YM":"BMW M (USA, SUV)","WMW":"MINI (Germany/UK)",
+    "WDD":"Mercedes-Benz (Germany)","WDB":"Mercedes-Benz (Germany)","WDC":"Mercedes-Benz (Germany, SUV)","W1K":"Mercedes-Benz (Germany)","W1N":"Mercedes-Benz (Germany, SUV)","4JG":"Mercedes-Benz (USA, SUV)","55S":"Mercedes-Benz (USA)",
+    "WAU":"Audi (Germany)","WA1":"Audi (Germany, SUV)","WUA":"Audi Sport (Germany)","WVW":"Volkswagen (Germany)","WVG":"Volkswagen (Germany, SUV)","3VW":"Volkswagen (Mexico)","1VW":"Volkswagen (USA)",
+    "WP0":"Porsche (Germany)","WP1":"Porsche (Germany, SUV)","YV1":"Volvo (Sweden)","YV4":"Volvo (Sweden, SUV)","7JR":"Volvo (USA)","SAL":"Land Rover (UK)","SAJ":"Jaguar (UK)","SCC":"Lotus (UK)","SCF":"Aston Martin (UK)","SCB":"Bentley (UK)","SCA":"Rolls-Royce (UK)",
+    "ZFF":"Ferrari (Italy)","ZHW":"Lamborghini (Italy)","ZAM":"Maserati (Italy)","ZAR":"Alfa Romeo (Italy)","ZFA":"Fiat (Italy)","ZAC":"Jeep / Fiat (Italy)","VF1":"Renault (France)","VF3":"Peugeot (France)","VF7":"Citroën (France)","VSS":"SEAT (Spain)","TMB":"Škoda (Czech Republic)",
+    "LFV":"FAW-Volkswagen (China)","LSV":"SAIC Volkswagen (China)","LVS":"Changan Ford (China)","LGX":"BYD (China)","LC0":"BYD (China)","L6T":"Geely (China)","LB3":"Geely (China)","MA1":"Mahindra (India)","MAT":"Tata Motors (India)","MAJ":"Ford (India)","MA3":"Maruti Suzuki (India)","MAL":"Hyundai (India)",
+    "7FC":"Rivian (USA)","1RN":"Rivian (USA)","5UJ":"Lucid (USA)","3HG":"Honda (Mexico)","93H":"Honda (Brazil)","9BW":"Volkswagen (Brazil)","9BG":"Chevrolet (Brazil)","8AJ":"Toyota (Argentina)",
+    "1HD":"Harley-Davidson (USA)","JYA":"Yamaha (Japan)","JKA":"Kawasaki (Japan)","ZDM":"Ducati (Italy)"
+  };
+  function wmiName(vin) {
+    return WMI[vin.slice(0,3)] || null;
+  }
+
+  function analyze(vin) {
+    const cd = checkDigit(vin);
+    const years = modelYears(vin);
+    const smallMfr = vin[2] === "9";
+    return {
+      vin,
+      wmi: vin.slice(0,3), vds: vin.slice(3,8), check: vin[8], year: vin[9], plant: vin[10], serial: vin.slice(11),
+      region: region(vin[0]), country: country(vin), manufacturer: wmiName(vin),
+      expectedCheck: cd, checkValid: cd === vin[8],
+      modelYears: years, smallMfr,
+      mfrCode: smallMfr ? vin.slice(11,14) : null
+    };
+  }
+
+  function validate(vin) {
+    if (vin.length !== 17) return `A VIN has 17 characters — this one has ${vin.length}.`;
+    const bad = vin.match(/[IOQ]/g);
+    if (bad) return `VINs never contain the letters I, O or Q (found: ${[...new Set(bad)].join(", ")}). Did you mean 1 or 0?`;
+    if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) return "VINs contain only letters A–Z (except I, O, Q) and digits 0–9.";
+    return null;
+  }
+
+  /* ---------- Remote decode (NHTSA vPIC) ---------- */
+  async function fetchNhtsa(vin, year) {
+    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${vin}?format=json${year ? "&modelyear=" + year : ""}`;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const j = await res.json();
+      return (j.Results && j.Results[0]) || null;
+    } finally { clearTimeout(t); }
+  }
+
+  /* ---------- Rendering ---------- */
+  const SECTIONS = [
+    ["Vehicle", [["Make","Make"],["Model","Model"],["Model Year","ModelYear"],["Trim","Trim"],["Trim 2","Trim2"],["Series","Series"],["Series 2","Series2"],["Vehicle Type","VehicleType"],["Body Class","BodyClass"],["Doors","Doors"],["Seats","Seats"],["Seat Rows","SeatRows"],["Gross Vehicle Weight","GVWR"],["Wheelbase (in)","WheelBaseShort"],["Bed Type","BedType"],["Cab Type","BodyCabType"]]],
+    ["Engine", [["Cylinders","EngineCylinders"],["Displacement (L)","DisplacementL"],["Displacement (cc)","DisplacementCC"],["Horsepower","EngineHP"],["Engine Model","EngineModel"],["Configuration","EngineConfiguration"],["Engine Manufacturer","EngineManufacturer"],["Fuel Type","FuelTypePrimary"],["Secondary Fuel","FuelTypeSecondary"],["Fuel Injection","FuelInjectionType"],["Turbo","Turbo"],["Valve Train","ValveTrainDesign"],["Electrification","ElectrificationLevel"],["Battery (kWh)","BatteryKWh"],["Battery Type","BatteryType"],["EV Drive Unit","EVDriveUnit"]]],
+    ["Drivetrain", [["Drive Type","DriveType"],["Transmission","TransmissionStyle"],["Speeds","TransmissionSpeeds"],["Axles","Axles"],["Brake System","BrakeSystemType"],["Wheel Size Front","WheelSizeFront"],["Wheel Size Rear","WheelSizeRear"],["Top Speed (mph)","TopSpeedMPH"]]],
+    ["Manufacturing", [["Manufacturer","Manufacturer"],["Plant Company","PlantCompanyName"],["Plant City","PlantCity"],["Plant State","PlantState"],["Plant Country","PlantCountry"],["Destination Market","DestinationMarket"],["Base Price ($)","BasePrice"],["NCSA Make","NCSAMake"],["NCSA Model","NCSAModel"]]],
+    ["Safety", [["Front Airbags","AirBagLocFront"],["Side Airbags","AirBagLocSide"],["Curtain Airbags","AirBagLocCurtain"],["Knee Airbags","AirBagLocKnee"],["ABS","ABS"],["Stability Control","ESC"],["Traction Control","TractionControl"],["TPMS","TPMS"],["Seat Belts","SeatBeltsAll"],["Pretensioner","Pretensioner"],["Backup Camera","RearVisibilitySystem"],["Auto Emergency Braking","CIB"],["Forward Collision Warning","ForwardCollisionWarning"],["Lane Departure Warning","LaneDepartureWarning"],["Lane Keep Assist","LaneKeepSystem"],["Blind Spot Warning","BlindSpotMon"],["Adaptive Cruise","AdaptiveCruiseControl"],["Daytime Running Lights","DaytimeRunningLight"],["Headlamp Type","LowerBeamHeadlampLightSource"],["Keyless Ignition","KeylessIgnition"]]]
+  ];
+  const IGNORE = new Set(["VIN","ErrorCode","ErrorText","AdditionalErrorText","SuggestedVIN","PossibleValues","VehicleDescriptor","Note"]);
+  const isEmpty = (v) => v == null || v === "" || v === "Not Applicable";
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const human = (k) => k.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+
+  let current = null;
+
+  function render(local, data) {
+    current = { local, data };
+    const d = data || {};
+    const year = d.ModelYear || local.modelYears.join(" or ");
+    const make = d.Make || (local.manufacturer || "").replace(/\s*\(.*\)$/, "") || "Unknown make";
+    const model = d.Model || "";
+    const trim = [d.Trim, d.Series].filter(Boolean).join(" · ");
+
+    $("r-vin").textContent = local.vin;
+    $("r-title").textContent = [year, make, model].filter(Boolean).join(" ");
+    $("r-sub").textContent = [trim, d.BodyClass, d.VehicleType].filter(Boolean).join(" — ") || "Basic analysis from VIN structure";
+
+    const badges = [];
+    badges.push(local.checkValid
+      ? `<span class="badge ok">✓ Check digit valid</span>`
+      : `<span class="badge ${local.region === "North America" ? "bad" : "warn"}">${local.region === "North America" ? "✗" : "!"} Check digit ${esc(local.check)} (expected ${esc(local.expectedCheck)})</span>`);
+    if (d.FuelTypePrimary) badges.push(`<span class="badge">${esc(d.FuelTypePrimary)}</span>`);
+    if (d.DriveType) badges.push(`<span class="badge">${esc(d.DriveType)}</span>`);
+    if (d.ElectrificationLevel) badges.push(`<span class="badge">${esc(d.ElectrificationLevel)}</span>`);
+    if (d.PlantCountry || local.country) badges.push(`<span class="badge">Built in ${esc(titleCase(d.PlantCountry || local.country))}</span>`);
+    if (!data) badges.push(`<span class="badge warn">Online database unavailable — offline analysis only</span>`);
+    else if (d.ErrorCode && d.ErrorCode !== "0") badges.push(`<span class="badge warn" title="${esc(d.ErrorText || "")}">Decoder note: ${esc(firstSentence(d.ErrorText))}</span>`);
+    $("r-badges").innerHTML = badges.join("");
+
+    renderAnatomy(local, d);
+    renderSections(d);
+    renderAll(d);
+    $("results").style.display = "block";
+  }
+
+  const titleCase = (s) => String(s).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\(([^)]*)\)/, (m) => m.toUpperCase());
+  const firstSentence = (s) => (s || "").split(/;|\.\s/)[0].replace(/^\d+\s*-\s*/, "").slice(0, 90);
+
+  function renderAnatomy(l, d) {
+    const segs = [
+      { from: 0, to: 3, color: "--seg1", name: "WMI", label: "World Manufacturer ID", value: l.wmi,
+        desc: [d.Manufacturer || l.manufacturer, [l.country, l.region].filter(Boolean).join(", ")].filter(Boolean).join(" — ") || l.region },
+      { from: 3, to: 8, color: "--seg2", name: "VDS", label: "Vehicle Descriptor", value: l.vds,
+        desc: [d.Model, d.BodyClass, d.EngineCylinders && d.EngineCylinders + " cyl", d.DisplacementL && (+d.DisplacementL).toFixed(1) + " L"].filter(Boolean).join(", ") || "Model, body, engine and restraint codes" },
+      { from: 8, to: 9, color: "--seg3", name: "Check", label: "Check digit", value: l.check,
+        desc: l.checkValid ? "Valid — matches computed value" : `Computed ${l.expectedCheck}${l.region === "North America" ? " — mismatch, possible typo" : " — not required outside North America"}` },
+      { from: 9, to: 10, color: "--seg4", name: "Year", label: "Model year", value: l.year,
+        desc: d.ModelYear || l.modelYears.join(" or ") || "Unknown code" },
+      { from: 10, to: 11, color: "--seg5", name: "Plant", label: "Assembly plant", value: l.plant,
+        desc: [d.PlantCity, d.PlantState, d.PlantCountry].filter(Boolean).map(titleCase).join(", ") || "Manufacturer-specific plant code" },
+      { from: 11, to: 17, color: "--seg6", name: "Serial", label: "Production sequence", value: l.serial,
+        desc: l.smallMfr ? `Small manufacturer (code ${l.mfrCode}), serial ${l.vin.slice(14)}` : "Unique production number" }
+    ];
+    let chars = "";
+    for (let i = 0; i < 17; i++) {
+      const s = segs.find((x) => i >= x.from && i < x.to);
+      chars += `<div class="ch" style="border-color:var(${s.color})" title="${s.label}"><b>${esc(l.vin[i])}</b><span>${i + 1}</span></div>`;
+    }
+    $("chars").innerHTML = chars;
+    $("legend").innerHTML = segs.map((s) => `
+      <div class="leg" style="border-color:var(${s.color})">
+        <div class="t">${s.from + 1}${s.to - s.from > 1 ? "–" + s.to : ""} · ${s.label}</div>
+        <div class="v mono">${esc(s.value)}</div>
+        <div class="d">${esc(s.desc)}</div>
+      </div>`).join("");
+  }
+
+  function renderSections(d) {
+    $("sections").innerHTML = SECTIONS.map(([title, fields]) => {
+      const rows = fields.filter(([, k]) => !isEmpty(d[k])).map(([label, k]) => `<dt>${label}</dt><dd>${esc(d[k])}</dd>`).join("");
+      return `<section class="card section"><h3>${title}</h3>${rows ? `<dl>${rows}</dl>` : `<div class="empty">No ${title.toLowerCase()} data encoded for this VIN.</div>`}</section>`;
+    }).join("");
+  }
+
+  function allEntries(d) {
+    return Object.entries(d).filter(([k, v]) => !IGNORE.has(k) && !isEmpty(v) && !/ID$/.test(k));
+  }
+
+  function renderAll(d) {
+    const q = $("filter").value.trim().toLowerCase();
+    const rows = allEntries(d).filter(([k, v]) => !q || human(k).toLowerCase().includes(q) || String(v).toLowerCase().includes(q));
+    $("all-count").textContent = `(${rows.length})`;
+    $("all-body").innerHTML = rows.length
+      ? rows.map(([k, v]) => `<tr><td>${esc(human(k))}</td><td>${esc(v)}</td></tr>`).join("")
+      : `<tr><td colspan="2" class="empty">${Object.keys(d).length ? "No fields match the filter." : "No online data available."}</td></tr>`;
+  }
+
+  /* ---------- History ---------- */
+  const HKEY = "vin-decoder-history";
+  function getHistory() { try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch { return []; } }
+  function addHistory(vin, label) {
+    try {
+      const h = getHistory().filter((x) => x.vin !== vin);
+      h.unshift({ vin, label });
+      localStorage.setItem(HKEY, JSON.stringify(h.slice(0, 8)));
+    } catch {}
+    showHistory();
+  }
+  function showHistory() {
+    const h = getHistory();
+    $("history").innerHTML = h.length ? "Recent: " + h.map((x) => `<button class="chip" data-vin="${esc(x.vin)}" title="${esc(x.label)}">${esc(x.vin)}</button>`).join("") : "";
+  }
+
+  /* ---------- Wiring ---------- */
+  const input = $("vin");
+  function cleanVin(s) { return s.toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  input.addEventListener("input", () => {
+    const v = cleanVin(input.value);
+    if (v !== input.value) input.value = v;
+    const c = $("count");
+    c.textContent = `${v.length} / 17`;
+    c.className = "count " + (v.length === 17 ? (validate(v) ? "bad" : "ok") : "");
+  });
+
+  async function decode(vin) {
+    vin = cleanVin(vin);
+    input.value = vin; input.dispatchEvent(new Event("input"));
+    const status = $("status");
+    const err = validate(vin);
+    if (err) { status.className = "error"; status.textContent = err; return; }
+
+    const local = analyze(vin);
+    status.className = ""; status.innerHTML = `<span class="spinner"></span>Analyzing ${esc(vin)}…`;
+    $("go").disabled = true;
+    let data = null;
+    try {
+      data = await fetchNhtsa(vin, local.modelYears.length === 1 ? local.modelYears[0] : null);
+    } catch (e) {
+      data = null;
+    }
+    $("go").disabled = false;
+    status.textContent = "";
+    render(local, data);
+    addHistory(vin, $("r-title").textContent);
+    try { history.replaceState(null, "", "#" + vin); } catch {}
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); decode(input.value); });
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-vin]");
+    if (t) { e.preventDefault(); decode(t.dataset.vin); }
+  });
+  $("filter").addEventListener("input", () => current && renderAll(current.data || {}));
+
+  function reportText() {
+    const { local, data } = current; const d = data || {};
+    const lines = [`VIN Report: ${local.vin}`, $("r-title").textContent, $("r-sub").textContent, "",
+      `WMI ${local.wmi} | VDS ${local.vds} | Check ${local.check} (${local.checkValid ? "valid" : "expected " + local.expectedCheck}) | Year ${local.year} | Plant ${local.plant} | Serial ${local.serial}`,
+      `Region: ${local.region}${local.country ? " / " + local.country : ""}`, ""];
+    for (const [k, v] of allEntries(d)) lines.push(`${human(k)}: ${v}`);
+    return lines.join("\n");
+  }
+  $("copy").addEventListener("click", async () => {
+    if (!current) return;
+    try { await navigator.clipboard.writeText(reportText()); $("copy").textContent = "Copied ✓"; }
+    catch { $("copy").textContent = "Copy failed"; }
+    setTimeout(() => ($("copy").textContent = "Copy report"), 1600);
+  });
+  $("json").addEventListener("click", () => {
+    if (!current) return;
+    const blob = new Blob([JSON.stringify({ analysis: current.local, decoded: Object.fromEntries(allEntries(current.data || {})) }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `vin-${current.local.vin}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  showHistory();
+  const fromHash = cleanVin(decodeURIComponent(location.hash.slice(1)));
+  if (fromHash.length === 17) decode(fromHash);
+})();
+</script>
+</body>
+</html>
