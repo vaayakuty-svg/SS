@@ -105,6 +105,31 @@
   .history { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
   .chip { font: 12px ui-monospace, Menlo, Consolas, monospace; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; }
 
+  .img-card { padding: 20px; margin-top: 16px; }
+  .img-card h3 { margin: 0 0 4px; font-size: 17px; }
+  .img-card > p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;
+    border: 2px dashed var(--border); border-radius: 10px; padding: 26px 16px; cursor: pointer; background: var(--surface-2);
+    color: var(--muted); font-size: 14px; transition: border-color .15s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--text); }
+  .drop strong { color: var(--text); font-size: 15px; }
+  .drop svg { width: 34px; height: 34px; stroke: var(--accent); }
+  .img-row { display: none; gap: 16px; margin-top: 14px; flex-wrap: wrap; align-items: flex-start; }
+  .img-row img { width: 220px; max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); }
+  .img-side { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .img-side .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mode { font-size: 13px; color: var(--muted); }
+  #img-status { font-size: 14px; }
+  #img-status.error { color: var(--bad); }
+  #img-result { display: none; margin-top: 16px; }
+  #img-result h4 { margin: 0 0 4px; font-size: 20px; }
+  #img-result .sum { color: var(--muted); margin: 0 0 12px; }
+  .vin-found { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 8px; background: var(--surface-2); border-left: 4px solid var(--ok); margin-bottom: 12px; }
+  .vin-found.none { border-left-color: var(--border); color: var(--muted); }
+  .vin-found .mono { font-size: 17px; letter-spacing: .08em; font-weight: 600; }
+  .feat { margin: 10px 0 0; padding-left: 18px; }
   footer { color: var(--muted); font-size: 13px; padding: 24px 0 40px; border-top: 1px solid var(--border); }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -134,6 +159,30 @@
       <span>Try: <a data-vin="1HGCM82633A004352">Honda</a> &middot; <a data-vin="5YJ3E1EA2JF000316">Tesla</a> &middot; <a data-vin="1FTFW1ET9DFC10312">Ford</a> &middot; <a data-vin="WBA3A5C53CF256551">BMW</a></span>
     </div>
     <div class="history" id="history"></div>
+  </section>
+
+  <section class="card img-card" id="img-card">
+    <h3>Analyze a photo</h3>
+    <p>Upload a photo of the car, or of the VIN plate / door sticker / windshield VIN. The page reads the VIN from the image and identifies the vehicle.</p>
+    <label class="drop" id="drop">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+      <strong>Tap to upload or take a photo</strong>
+      <span>or drag an image here · JPG, PNG, WebP</span>
+      <input type="file" id="img-input" accept="image/*" hidden>
+    </label>
+    <div class="img-row" id="img-row">
+      <img id="img-preview" alt="Uploaded vehicle photo">
+      <div class="img-side">
+        <div class="mode" id="img-mode"></div>
+        <div class="btns">
+          <button class="primary" id="img-go" type="button">Analyze image</button>
+          <button id="img-stop" type="button" hidden>Stop</button>
+          <button id="img-clear" type="button">Remove</button>
+        </div>
+        <div id="img-status" role="status"></div>
+      </div>
+    </div>
+    <div id="img-result"></div>
   </section>
 
   <div id="status" role="status"></div>
@@ -171,7 +220,7 @@
   </main>
 
   <footer>
-    Vehicle details come from the U.S. NHTSA vPIC database (free public API). VIN structure, check digit, region, country and year are analyzed locally in your browser.
+    Vehicle details come from the U.S. NHTSA vPIC database (free public API). VIN structure, check digit, region, country and year are analyzed locally in your browser. Photo analysis uses Claude vision when the page is opened on claude.ai, and in-browser OCR (Tesseract.js) everywhere else; photos are not stored.
     Coverage is best for vehicles sold in North America; for other markets the local analysis still works but some fields may be missing.
   </footer>
 </div>
@@ -473,12 +522,218 @@
     catch { $("copy").textContent = "Copy failed"; }
     setTimeout(() => ($("copy").textContent = "Copy report"), 1600);
   });
-  $("json").addEventListener("click", () => {
+  /* ---------- Claude viewer capabilities (only when opened on claude.ai) ---------- */
+  const capP = (name) => (window.claude && typeof window.claude.use === "function")
+    ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
+  const samplerP = capP("sample");
+  const downloadsP = capP("downloads");
+
+  $("json").addEventListener("click", async () => {
     if (!current) return;
-    const blob = new Blob([JSON.stringify({ analysis: current.local, decoded: Object.fromEntries(allEntries(current.data || {})) }, null, 2)], { type: "application/json" });
+    const text = JSON.stringify({ analysis: current.local, decoded: Object.fromEntries(allEntries(current.data || {})) }, null, 2);
+    const filename = `vin-${current.local.vin}.json`;
+    const dl = await downloadsP;
+    if (dl) { try { await dl.save({ filename, data: text }); } catch {} return; }
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = `vin-${current.local.vin}.json`; a.click();
+    a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = filename; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  /* ---------- Image analysis ---------- */
+  let imgFile = null, imgCtl = null, aiOK = false;
+  const imgStatus = (msg, isErr) => { const s = $("img-status"); s.className = isErr ? "error" : ""; s.innerHTML = msg; };
+
+  // Pick the engine: Claude vision inside claude.ai, otherwise in-browser OCR (Tesseract.js)
+  (async () => {
+    const sample = await samplerP;
+    if (sample) {
+      const lim = await sample.limits().catch(() => null);
+      aiOK = !!(lim && lim.images);
+    }
+    $("img-mode").textContent = aiOK
+      ? "Engine: Claude vision — identifies the vehicle and reads any VIN."
+      : "Engine: in-browser text recognition (OCR) — reads the VIN from a photo of the VIN plate or sticker.";
+  })();
+  $("img-mode").textContent = "Engine: checking…";
+
+  function setImage(file) {
+    if (!file || !/^image\//.test(file.type)) { imgStatus("Please choose an image file.", true); return; }
+    imgFile = file;
+    const prev = $("img-preview");
+    if (prev.src) URL.revokeObjectURL(prev.src);
+    prev.src = URL.createObjectURL(file);
+    $("img-row").style.display = "flex";
+    $("img-result").style.display = "none";
+    imgStatus("");
+  }
+  $("img-input").addEventListener("change", (e) => { setImage(e.target.files[0]); e.target.value = ""; });
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => setImage(e.dataTransfer.files[0]));
+  document.addEventListener("paste", (e) => {
+    const f = [...(e.clipboardData?.files || [])].find((x) => /^image\//.test(x.type));
+    if (f) setImage(f);
+  });
+  $("img-clear").addEventListener("click", () => {
+    imgFile = null; imgCtl?.abort();
+    $("img-row").style.display = "none"; $("img-result").style.display = "none"; imgStatus("");
+  });
+  $("img-stop").addEventListener("click", () => imgCtl?.abort());
+
+  // Find VIN candidates in OCR / model text. Fixes common misreads (I→1, O/Q→0).
+  function findVins(text) {
+    const up = text.toUpperCase();
+    const tokens = new Set();
+    const raw = up.replace(/[^A-Z0-9\n]/g, " ");
+    for (const m of raw.matchAll(/[A-Z0-9]{17,}/g)) {
+      const s = m[0];
+      for (let i = 0; i + 17 <= s.length; i++) tokens.add(s.slice(i, i + 17));
+    }
+    const squashed = up.replace(/[^A-Z0-9]/g, "");
+    for (let i = 0; i + 17 <= squashed.length; i++) tokens.add(squashed.slice(i, i + 17));
+    const out = new Map();
+    for (let t of tokens) {
+      t = t.replace(/I/g, "1").replace(/[OQ]/g, "0");
+      if (validate(t) || !/\d/.test(t) || !/[A-Z]/.test(t)) continue;
+      const a = analyze(t);
+      let score = 0;
+      if (a.checkValid) score += 5;
+      if (a.manufacturer) score += 3;
+      if (a.country) score += 1;
+      if (a.modelYears.length) score += 1;
+      if (/^\d{4,}$/.test(t.slice(13))) score += 1;
+      if (score >= 4 && (!out.has(t) || out.get(t) < score)) out.set(t, score);
+    }
+    return [...out.entries()].sort((a, b) => b[1] - a[1]).map(([vin, score]) => ({ vin, valid: analyze(vin).checkValid, score }));
+  }
+
+  let tessP = null;
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    return tessP ||= new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+      s.onload = () => res(window.Tesseract);
+      s.onerror = () => { tessP = null; rej(new Error("Could not load the OCR engine (check your internet connection).")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  const AI_PROMPT = `You are an automotive expert. Analyze the attached photo.
+1. If any Vehicle Identification Number (VIN, 17 characters, never contains I, O or Q) is visible anywhere — VIN plate, door-jamb sticker, windshield, registration document, engine bay — transcribe it exactly.
+2. If a vehicle is visible, identify it as precisely as the image allows.
+Reply with ONLY a JSON object of this shape (use null when unknown, never invent a VIN):
+{"is_vehicle_photo": true, "vin": "1HGCM82633A004352" or null, "vin_confidence": "high"|"medium"|"low"|null, "vin_location": "where the VIN appears" or null,
+ "make": "", "model": "", "generation_or_trim": "", "year_range": "e.g. 2018-2021", "vehicle_type": "e.g. Passenger car / SUV / Pickup / Motorcycle / Truck / Bus",
+ "body_style": "e.g. Sedan, Hatchback, Crew-cab pickup", "color": "", "fuel_or_powertrain_guess": "", "drivetrain_guess": "",
+ "identification_confidence": "high"|"medium"|"low", "key_visual_clues": ["badge", "grille shape", "..."], "condition_notes": "visible damage, wear or modifications", "other_text_seen": "plates, badges, labels", "summary": "one or two sentences"}`;
+
+  async function analyzeWithClaude(sample) {
+    imgCtl = new AbortController();
+    imgStatus(`<span class="spinner"></span>Claude is looking at the photo… (this can take 10–40 s)`);
+    const r = await sample.json(AI_PROMPT, { images: [imgFile], signal: imgCtl.signal, cache: false });
+    if (!r || typeof r !== "object") throw { code: "invalid_json" };
+    return r;
+  }
+
+  async function analyzeWithOcr() {
+    imgStatus(`<span class="spinner"></span>Loading text-recognition engine…`);
+    const T = await loadTesseract();
+    let aborted = false;
+    imgCtl = new AbortController();
+    imgCtl.signal.addEventListener("abort", () => { aborted = true; });
+    const { data } = await T.recognize(imgFile, "eng", {
+      logger: (m) => {
+        if (m.status === "recognizing text") imgStatus(`<span class="spinner"></span>Reading text… ${Math.round(m.progress * 100)}%`);
+      }
+    });
+    if (aborted) throw { code: "cancelled" };
+    return data.text || "";
+  }
+
+  function renderImageResult(ai, ocrText) {
+    const box = $("img-result");
+    let vins = [];
+    if (ai && ai.vin) vins = findVins(String(ai.vin));
+    if (ai && !vins.length && ai.other_text_seen) vins = findVins(String(ai.other_text_seen));
+    if (ocrText != null) vins = findVins(ocrText);
+
+    let html = "";
+    if (vins.length) {
+      html += vins.slice(0, 3).map((v, i) => `
+        <div class="vin-found">
+          <span>${i === 0 ? "VIN found:" : "Also possible:"}</span>
+          <span class="mono">${esc(v.vin)}</span>
+          <span class="badge ${v.valid ? "ok" : "warn"}">${v.valid ? "✓ check digit valid" : "check digit not verified"}</span>
+          <button class="primary" data-vin="${esc(v.vin)}">Decode this VIN</button>
+        </div>`).join("");
+    } else {
+      html += `<div class="vin-found none">No readable VIN found in this image. ${ai ? "" : "For best results, crop close to the VIN plate or sticker with good light and no glare."}</div>`;
+    }
+
+    if (ai && ai.is_vehicle_photo !== false && (ai.make || ai.model)) {
+      const title = [ai.year_range, ai.make, ai.model].filter(Boolean).join(" ");
+      const rows = [
+        ["Make", ai.make], ["Model", ai.model], ["Generation / trim", ai.generation_or_trim], ["Year range", ai.year_range],
+        ["Vehicle type", ai.vehicle_type], ["Body style", ai.body_style], ["Color", ai.color],
+        ["Powertrain (estimate)", ai.fuel_or_powertrain_guess], ["Drivetrain (estimate)", ai.drivetrain_guess],
+        ["Confidence", ai.identification_confidence], ["VIN location", ai.vin_location], ["Condition", ai.condition_notes], ["Other text seen", ai.other_text_seen]
+      ].filter(([, v]) => v != null && v !== "");
+      html += `<section class="card section">
+        <h4>${esc(title)}</h4>
+        ${ai.summary ? `<p class="sum">${esc(ai.summary)}</p>` : ""}
+        <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+        ${Array.isArray(ai.key_visual_clues) && ai.key_visual_clues.length ? `<div style="margin-top:12px;color:var(--muted);font-size:13px">Identified from:</div><ul class="feat">${ai.key_visual_clues.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+        <p class="mode" style="margin:12px 0 0">Photo identification is an estimate. The decoded VIN is the authoritative source for exact model, year and specs.</p>
+      </section>`;
+    } else if (ai && ai.summary) {
+      html += `<p class="sum">${esc(ai.summary)}</p>`;
+    }
+    if (ocrText != null && ocrText.trim()) {
+      html += `<details style="margin-top:10px"><summary class="mode" style="cursor:pointer">Text read from the image</summary><pre class="mono" style="white-space:pre-wrap;font-size:13px;background:var(--surface-2);padding:10px;border-radius:8px">${esc(ocrText.trim())}</pre></details>`;
+    }
+    box.innerHTML = html;
+    box.style.display = "block";
+    return vins;
+  }
+
+  const AI_ERRORS = {
+    not_granted: "Permission to use Claude was declined, so the page used text recognition instead.",
+    rate_limited: "Too many requests right now — wait a minute and try again.",
+    image_rejected: "This image could not be processed. Try a JPG or PNG under 5 MB.",
+    refused: "Claude could not analyze this image.",
+    invalid_json: "The answer could not be read. Try again.",
+    cancelled: "Stopped."
+  };
+
+  $("img-go").addEventListener("click", async () => {
+    if (!imgFile) return;
+    $("img-go").disabled = true; $("img-stop").hidden = false;
+    try {
+      const sample = aiOK ? await samplerP : null;
+      if (sample) {
+        try {
+          const ai = await analyzeWithClaude(sample);
+          imgStatus("");
+          const vins = renderImageResult(ai, null);
+          if (vins.length && vins[0].valid) decode(vins[0].vin);
+          return;
+        } catch (e) {
+          if (e && e.code === "cancelled") { imgStatus("Stopped."); return; }
+          if (e && e.code === "not_granted") aiOK = false;
+          if (!e || e.code !== "not_granted") { imgStatus(AI_ERRORS[e && e.code] || "Image analysis failed. Try again.", true); return; }
+        }
+      }
+      const text = await analyzeWithOcr();
+      imgStatus("");
+      const vins = renderImageResult(null, text);
+      if (vins.length && vins[0].valid) decode(vins[0].vin);
+    } catch (e) {
+      imgStatus(e && e.code === "cancelled" ? "Stopped." : esc((e && e.message) || "Image analysis failed."), !(e && e.code === "cancelled"));
+    } finally {
+      $("img-go").disabled = false; $("img-stop").hidden = true; imgCtl = null;
+    }
   });
 
   showHistory();
