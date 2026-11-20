@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIN Decoder</title>
+<meta name="description" content="Decode and analyze any 17-character Vehicle Identification Number: make, model, year, body type, engine, plant and more.">
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --surface-2: #f0f2f5; --text: #15181e; --muted: #5d6573;
+    --border: #dfe3e9; --accent: #1f6feb; --accent-ink: #ffffff; --ok: #1a7f37; --bad: #c62828; --warn: #9a6700;
+    --seg1: #1f6feb; --seg2: #8250df; --seg3: #bf5700; --seg4: #1a7f37; --seg5: #cf222e; --seg6: #0e7490;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116; --surface: #161b22; --surface-2: #1d232c; --text: #e6edf3; --muted: #9aa4b2;
+      --border: #2b323c; --accent: #4493f8; --accent-ink: #0b0f14; --ok: #3fb950; --bad: #f85149; --warn: #d29922;
+      --seg1: #4493f8; --seg2: #a371f7; --seg3: #f0883e; --seg4: #3fb950; --seg5: #ff7b72; --seg6: #39c5cf;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #161b22; --surface-2: #1d232c; --text: #e6edf3; --muted: #9aa4b2;
+    --border: #2b323c; --accent: #4493f8; --accent-ink: #0b0f14; --ok: #3fb950; --bad: #f85149; --warn: #d29922;
+    --seg1: #4493f8; --seg2: #a371f7; --seg3: #f0883e; --seg4: #3fb950; --seg5: #ff7b72; --seg6: #39c5cf;
+    --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 40px 0 24px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 640px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .search { padding: 20px; }
+  .search form { display: flex; gap: 10px; flex-wrap: wrap; }
+  .search input {
+    flex: 1 1 320px; min-width: 0; padding: 12px 14px; font-size: 18px; letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text);
+  }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font: inherit; cursor: pointer; border-radius: 8px; padding: 10px 18px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text);
+  }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .6; cursor: default; }
+  .hint { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .hint a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .count.ok { color: var(--ok); } .count.bad { color: var(--bad); }
+
+  #status { margin: 16px 0 0; font-size: 14px; }
+  #status.error { color: var(--bad); }
+  #results { display: none; margin: 20px 0 48px; }
+
+  .hero { padding: 22px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .hero h2 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+  .hero .sub { color: var(--muted); margin-top: 4px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); }
+  .badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .badge.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+  .badge.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions button { padding: 8px 12px; font-size: 13px; }
+
+  .anatomy { padding: 20px 22px; margin-top: 16px; }
+  .anatomy h3, .section h3 { margin: 0 0 14px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .chars { display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 4px; }
+  .ch { text-align: center; border-radius: 6px; padding: 8px 0 4px; border-bottom: 3px solid; background: var(--surface-2); }
+  .ch b { display: block; font-size: 20px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .ch span { font-size: 10px; color: var(--muted); }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 16px; }
+  .leg { border-left: 4px solid; padding: 6px 10px; background: var(--surface-2); border-radius: 0 6px 6px 0; }
+  .leg .t { font-size: 12px; color: var(--muted); }
+  .leg .v { font-weight: 600; }
+  .leg .d { font-size: 13px; color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+  .section { padding: 18px 20px; }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(120px, 42%) 1fr; gap: 0; }
+  dt, dd { padding: 7px 0; border-bottom: 1px solid var(--border); margin: 0; }
+  dt { color: var(--muted); font-size: 14px; padding-right: 10px; }
+  dd { font-weight: 500; overflow-wrap: anywhere; }
+  dl > :nth-last-child(-n+2) { border-bottom: 0; }
+  .empty { color: var(--muted); font-size: 14px; }
+
+  .all { padding: 18px 20px; margin-top: 16px; }
+  .all-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .all-head h3 { margin: 0; }
+  .all-head input { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; min-width: 0; flex: 0 1 260px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  td:first-child { color: var(--muted); width: 40%; }
+
+  .history { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .chip { font: 12px ui-monospace, Menlo, Consolas, monospace; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; }
+
+  .img-card { padding: 20px; margin-top: 16px; }
+  .img-card h3 { margin: 0 0 4px; font-size: 17px; }
+  .img-card > p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;
+    border: 2px dashed var(--border); border-radius: 10px; padding: 26px 16px; cursor: pointer; background: var(--surface-2);
+    color: var(--muted); font-size: 14px; transition: border-color .15s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--text); }
+  .drop strong { color: var(--text); font-size: 15px; }
+  .drop svg { width: 34px; height: 34px; stroke: var(--accent); }
+  .img-row { display: none; gap: 16px; margin-top: 14px; flex-wrap: wrap; align-items: flex-start; }
+  .img-row img { width: 220px; max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); }
+  .img-side { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .img-side .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mode { font-size: 13px; color: var(--muted); }
+  #img-status { font-size: 14px; }
+  #img-status.error { color: var(--bad); }
+  #img-result { display: none; margin-top: 16px; }
+  #img-result h4 { margin: 0 0 4px; font-size: 20px; }
+  #img-result .sum { color: var(--muted); margin: 0 0 12px; }
+  .vin-found { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 8px; background: var(--surface-2); border-left: 4px solid var(--ok); margin-bottom: 12px; }
+  .vin-found.none { border-left-color: var(--border); color: var(--muted); }
+  .vin-found .mono { font-size: 17px; letter-spacing: .08em; font-weight: 600; }
+  .feat { margin: 10px 0 0; padding-left: 18px; }
+  footer { color: var(--muted); font-size: 13px; padding: 24px 0 40px; border-top: 1px solid var(--border); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+
+  /* ================= Motion ================= */
+  body { position: relative; isolation: isolate; }
+  body::before {
+    content: ""; position: fixed; inset: -25%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(38% 32% at 20% 18%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      radial-gradient(30% 28% at 82% 30%, color-mix(in srgb, var(--seg2) 11%, transparent), transparent 70%),
+      radial-gradient(34% 30% at 60% 88%, color-mix(in srgb, var(--seg6) 10%, transparent), transparent 70%);
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift { 0% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(3%,-2%,0) rotate(4deg); } 100% { transform: translate3d(-3%,2%,0) rotate(-3deg); } }
+
+  header h1, header p { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+  header p { animation-delay: .08s; }
+  header h1 .grad {
+    background: linear-gradient(90deg, var(--accent), var(--seg2), var(--seg6), var(--accent));
+    background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: sheen 8s linear infinite;
+  }
+  @keyframes sheen { to { background-position: 300% 0; } }
+
+  /* header scene: road, car, scanning beam */
+  .scene {
+    position: relative; height: 104px; margin-top: 22px; overflow: hidden; border-radius: 14px;
+    border: 1px solid var(--border); background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    animation: rise .7s .16s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .scene .sky { position: absolute; inset: 0; background-image: radial-gradient(circle, color-mix(in srgb, var(--muted) 35%, transparent) 1px, transparent 1.5px); background-size: 26px 26px; opacity: .35; animation: road 3.5s linear infinite; }
+  .scene .road { position: absolute; left: 0; right: 0; bottom: 16px; height: 3px; border-radius: 2px;
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--muted) 70%, transparent) 0 30px, transparent 30px 60px);
+    background-size: 60px 3px; animation: road .55s linear infinite; }
+  .scene .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; background: color-mix(in srgb, var(--muted) 10%, transparent); }
+  @keyframes road { to { background-position: -60px 0; } }
+  .scene .car { position: absolute; left: 50%; bottom: 13px; width: 156px; margin-left: -78px; color: var(--accent); animation: cruise 10s ease-in-out infinite; }
+  .scene .car .body { animation: bob .45s ease-in-out infinite alternate; }
+  .scene .car .wheel { transform-box: fill-box; transform-origin: center; animation: spin .45s linear infinite; }
+  .scene .speed { position: absolute; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accent)); opacity: .5; animation: whoosh 1.1s linear infinite; }
+  .scene .speed:nth-of-type(1) { top: 34px; width: 60px; animation-delay: 0s; }
+  .scene .speed:nth-of-type(2) { top: 52px; width: 90px; animation-delay: .35s; }
+  .scene .speed:nth-of-type(3) { top: 68px; width: 46px; animation-delay: .7s; }
+  @keyframes whoosh { from { left: 105%; } to { left: -20%; } }
+  @keyframes cruise { 0%,100% { transform: translateX(-140px); } 50% { transform: translateX(140px); } }
+  @keyframes bob { to { transform: translateY(-1.5px); } }
+  .scene .beam { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: var(--accent);
+    box-shadow: 0 0 22px 6px color-mix(in srgb, var(--accent) 45%, transparent); animation: beam 5s cubic-bezier(.6,0,.4,1) infinite; }
+  .scene .tag { position: absolute; top: 10px; right: 12px; font: 600 11px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .12em; color: var(--accent);
+    padding: 3px 8px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); background: var(--surface); }
+  .scene .tag::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; animation: blink 1.2s ease-in-out infinite; }
+  @keyframes beam { 0% { left: -4%; opacity: 0; } 8% { opacity: 1; } 55% { left: 104%; opacity: 1; } 56%,100% { left: 104%; opacity: 0; } }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  /* entrances */
+  .search { animation: rise .7s .22s cubic-bezier(.2,.7,.2,1) both; }
+  .img-card { animation: rise .7s .3s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+  .reveal { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+  .badge { animation: pop .45s cubic-bezier(.3,1.5,.5,1) both; animation-delay: calc(.25s + var(--i, 0) * 70ms); }
+  @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+  .chars { perspective: 600px; }
+  .ch { animation: flip .55s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 38ms); transition: transform .2s, background .2s; }
+  .ch:hover { transform: translateY(-3px); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+  @keyframes flip { from { opacity: 0; transform: rotateX(-90deg) translateY(-8px); } to { opacity: 1; transform: none; } }
+  .leg { animation: slide .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.5s + var(--i, 0) * 70ms); }
+  @keyframes slide { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+  .section dt, .section dd { animation: fade .4s ease both; animation-delay: calc(var(--i, 0) * 80ms + .25s); }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .grid .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  /* buttons */
+  button { transition: transform .15s ease, box-shadow .2s ease, background .2s; position: relative; overflow: hidden; }
+  button:not(:disabled):hover { transform: translateY(-1px); }
+  button:not(:disabled):active { transform: scale(.97); }
+  button.primary:not(:disabled):hover { box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
+  button.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); transform: translateX(-120%); }
+  button.primary:not(:disabled):hover::after { animation: shine .8s ease; }
+  @keyframes shine { to { transform: translateX(120%); } }
+
+  /* busy states */
+  .search { position: relative; overflow: hidden; }
+  .search::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; opacity: 0;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--seg2), transparent); background-size: 50% 100%; background-repeat: no-repeat; transition: opacity .2s; }
+  .search.busy::after { opacity: 1; animation: load 1.1s ease-in-out infinite; }
+  @keyframes load { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+  .search.busy #vin { background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 16%, transparent), transparent); background-size: 40% 100%; background-repeat: no-repeat; animation: load 1.1s linear infinite; }
+  .count.ok { animation: pop .4s cubic-bezier(.3,1.5,.5,1); }
+
+  .drop svg { transition: transform .3s cubic-bezier(.3,1.5,.5,1); }
+  .drop:hover svg, .drop.over svg { transform: translateY(-4px) scale(1.08); }
+  .drop.over { transform: scale(1.01); }
+  .drop { transition: border-color .15s, transform .2s; }
+
+  .pv { position: relative; border-radius: 8px; overflow: hidden; flex: 0 0 auto; max-width: 100%; }
+  .pv img { display: block; }
+  .pv .scan, .pv .grid-ov { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .pv .grid-ov { background-image: linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+  .pv .scan::before { content: ""; position: absolute; left: 0; right: 0; height: 40%; top: -40%;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 35%, transparent) 85%, var(--accent)); animation: scan 1.6s cubic-bezier(.5,0,.5,1) infinite; }
+  .pv.busy .scan, .pv.busy .grid-ov { opacity: 1; }
+  .pv.busy img { filter: saturate(.6) contrast(1.05); }
+  @keyframes scan { from { top: -40%; } to { top: 100%; } }
+  .vin-found { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 90ms); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .scene .beam { display: none; }
+  }
+  @media print { .scene, body::before { display: none; } }
+
+  @media (max-width: 640px) {
+    .scene { height: 88px; }
+    @keyframes cruise { 0%,100% { transform: translateX(-70px); } 50% { transform: translateX(70px); } }
+    header h1 { font-size: 23px; }
+    .chars { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+    .ch b { font-size: 17px; }
+    dl { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="grad">VIN Decoder</span> &amp; Vehicle Analyzer</h1>
+    <p>Enter a 17-character Vehicle Identification Number to see the make, model, model year, body type, engine, transmission, plant, safety equipment and every other field encoded for that vehicle.</p>
+    <div class="scene" aria-hidden="true">
+      <div class="sky"></div>
+      <span class="speed"></span><span class="speed"></span><span class="speed"></span>
+      <div class="ground"></div><div class="road"></div>
+      <svg class="car" viewBox="0 0 156 52" fill="none">
+        <g class="body">
+          <path d="M8 38 L12 27 Q16 24 28 23 L46 12 Q51 9 60 9 L92 9 Q100 9 107 15 L120 23 Q140 25 146 30 L148 38 Z" fill="currentColor" opacity=".9"/>
+          <path d="M50 22 L60 13 L76 13 L76 22 Z M81 22 L81 13 L92 13 Q98 13 103 17 L108 22 Z" fill="var(--surface)" opacity=".85"/>
+          <rect x="138" y="28" width="7" height="3" rx="1.5" fill="#ffd166"/>
+          <rect x="10" y="29" width="5" height="3" rx="1.5" fill="#ef476f"/>
+        </g>
+        <g class="wheel"><circle cx="36" cy="40" r="9" fill="var(--text)"/><circle cx="36" cy="40" r="4" fill="var(--surface-2)"/><path d="M36 31.5 V36 M36 44 V48.5 M27.5 40 H32 M40 40 H44.5" stroke="var(--surface-2)" stroke-width="1.6"/></g>
+        <g class="wheel"><circle cx="120" cy="40" r="9" fill="var(--text)"/><circle cx="120" cy="40" r="4" fill="var(--surface-2)"/><path d="M120 31.5 V36 M120 44 V48.5 M111.5 40 H116 M124 40 H128.5" stroke="var(--surface-2)" stroke-width="1.6"/></g>
+      </svg>
+      <div class="beam"></div>
+      <div class="tag">SCANNING VIN</div>
+    </div>
+  </header>
+
+  <section class="card search">
+    <form id="form" autocomplete="off">
+      <input id="vin" class="mono" maxlength="17" placeholder="e.g. 1HGCM82633A004352" aria-label="VIN" spellcheck="false">
+      <button class="primary" id="go" type="submit">Decode VIN</button>
+    </form>
+    <div class="hint">
+      <span><span id="count" class="count">0 / 17</span> &middot; letters I, O and Q are never used in a VIN</span>
+      <span>Try: <a data-vin="1HGCM82633A004352">Honda</a> &middot; <a data-vin="5YJ3E1EA2JF000316">Tesla</a> &middot; <a data-vin="1FTFW1ET9DFC10312">Ford</a> &middot; <a data-vin="WBA3A5C53CF256551">BMW</a></span>
+    </div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <section class="card img-card" id="img-card">
+    <h3>Analyze a photo</h3>
+    <p>Upload a photo of the car, or of the VIN plate / door sticker / windshield VIN. The page reads the VIN from the image and identifies the vehicle.</p>
+    <label class="drop" id="drop">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+      <strong>Tap to upload or take a photo</strong>
+      <span>or drag an image here · JPG, PNG, WebP</span>
+      <input type="file" id="img-input" accept="image/*" hidden>
+    </label>
+    <div class="img-row" id="img-row">
+      <div class="pv" id="pv"><img id="img-preview" alt="Uploaded vehicle photo"><div class="grid-ov"></div><div class="scan"></div></div>
+      <div class="img-side">
+        <div class="mode" id="img-mode"></div>
+        <div class="btns">
+          <button class="primary" id="img-go" type="button">Analyze image</button>
+          <button id="img-stop" type="button" hidden>Stop</button>
+          <button id="img-clear" type="button">Remove</button>
+        </div>
+        <div id="img-status" role="status"></div>
+      </div>
+    </div>
+    <div id="img-result"></div>
+  </section>
+
+  <div id="status" role="status"></div>
+
+  <main id="results">
+    <section class="card hero">
+      <div>
+        <div class="mono" id="r-vin" style="color:var(--muted);letter-spacing:.1em"></div>
+        <h2 id="r-title"></h2>
+        <div class="sub" id="r-sub"></div>
+        <div class="badges" id="r-badges"></div>
+      </div>
+      <div class="actions">
+        <button id="copy">Copy report</button>
+        <button id="json">Download JSON</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </section>
+
+    <section class="card anatomy">
+      <h3>VIN anatomy</h3>
+      <div class="chars" id="chars"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="grid" id="sections"></div>
+
+    <section class="card all">
+      <div class="all-head">
+        <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">All decoded fields <span id="all-count"></span></h3>
+        <input id="filter" placeholder="Filter fields…" aria-label="Filter fields">
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody id="all-body"></tbody></table></div>
+    </section>
+  </main>
+
+  <footer>
+    Vehicle details come from the U.S. NHTSA vPIC database (free public API). VIN structure, check digit, region, country and year are analyzed locally in your browser. Photo analysis uses Claude vision when the page is opened on claude.ai, and in-browser OCR (Tesseract.js) everywhere else; photos are not stored.
+    Coverage is best for vehicles sold in North America; for other markets the local analysis still works but some fields may be missing.
+  </footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- Local VIN analysis ---------- */
+  const TRANSLIT = { A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,J:1,K:2,L:3,M:4,N:5,P:7,R:9,S:2,T:3,U:4,V:5,W:6,X:7,Y:8,Z:9 };
+  const WEIGHTS = [8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
+  const YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789";
+
+  const val = (c) => /\d/.test(c) ? +c : TRANSLIT[c];
+
+  function checkDigit(vin) {
+    let sum = 0;
+    for (let i = 0; i < 17; i++) sum += val(vin[i]) * WEIGHTS[i];
+    const r = sum % 11;
+    return r === 10 ? "X" : String(r);
+  }
+
+  function modelYears(vin) {
+    const idx = YEAR_CODES.indexOf(vin[9]);
+    if (idx < 0) return [];
+    const a = 1980 + idx, b = a + 30;
+    // North American convention: position 7 numeric => 1980-2009 cycle, letter => 2010-2039
+    if (/\d/.test(vin[6])) return [a];
+    if (/[A-Z]/.test(vin[6])) return [b];
+    return [a, b];
+  }
+
+  function region(c) {
+    if ("ABCDEFGH".includes(c)) return "Africa";
+    if ("JKLMNPR".includes(c)) return "Asia";
+    if ("STUVWXYZ".includes(c)) return "Europe";
+    if ("12345".includes(c)) return "North America";
+    if ("67".includes(c)) return "Oceania";
+    if ("89".includes(c)) return "South America";
+    return "Unknown";
+  }
+
+  // [first char, second-char range start, end, country]
+  const COUNTRY_RANGES = [
+    ["A","A","H","South Africa"],["A","J","N","Ivory Coast"],["B","A","E","Angola"],["B","F","K","Kenya"],["B","L","R","Tanzania"],
+    ["C","A","E","Benin"],["C","F","K","Madagascar"],["C","L","R","Tunisia"],["D","A","E","Egypt"],["D","F","K","Morocco"],["D","L","R","Zambia"],
+    ["E","A","E","Ethiopia"],["E","F","K","Mozambique"],["F","A","E","Ghana"],["F","F","K","Nigeria"],
+    ["J","A","Z","Japan"],["J","0","9","Japan"],["K","A","E","Sri Lanka"],["K","F","K","Israel"],["K","L","R","South Korea"],["K","S","Z","Kazakhstan"],["K","0","9","Kazakhstan"],
+    ["L","A","Z","China"],["L","0","9","China"],["M","A","E","India"],["M","F","K","Indonesia"],["M","L","R","Thailand"],["M","S","Z","Myanmar"],
+    ["N","A","E","Iran"],["N","F","K","Pakistan"],["N","L","R","Turkey"],["P","A","E","Philippines"],["P","F","K","Singapore"],["P","L","R","Malaysia"],
+    ["R","A","E","United Arab Emirates"],["R","F","K","Taiwan"],["R","L","R","Vietnam"],["R","S","Z","Saudi Arabia"],
+    ["S","A","M","United Kingdom"],["S","N","T","Germany (East)"],["S","U","Z","Poland"],["S","1","4","Latvia"],
+    ["T","A","H","Switzerland"],["T","J","P","Czech Republic"],["T","R","V","Hungary"],["T","W","Z","Portugal"],["T","1","1","Portugal"],
+    ["U","H","M","Denmark"],["U","N","T","Ireland"],["U","U","Z","Romania"],["U","5","7","Slovakia"],
+    ["V","A","E","Austria"],["V","F","R","France"],["V","S","W","Spain"],["V","X","2","Serbia"],["V","3","5","Croatia"],["V","6","0","Estonia"],
+    ["W","A","Z","Germany"],["W","0","9","Germany"],["X","A","E","Bulgaria"],["X","F","K","Greece"],["X","L","R","Netherlands"],["X","S","W","Russia"],["X","X","2","Luxembourg"],["X","3","0","Russia"],
+    ["Y","A","E","Belgium"],["Y","F","K","Finland"],["Y","L","R","Malta"],["Y","S","W","Sweden"],["Y","X","2","Norway"],["Y","3","5","Belarus"],["Y","6","0","Ukraine"],
+    ["Z","A","R","Italy"],["Z","X","2","Slovenia"],["Z","3","5","Lithuania"],
+    ["1","A","Z","United States"],["1","0","9","United States"],["4","A","Z","United States"],["4","0","9","United States"],["5","A","Z","United States"],["5","0","9","United States"],
+    ["2","A","Z","Canada"],["2","0","9","Canada"],["3","A","W","Mexico"],["3","X","7","Costa Rica"],["3","8","0","Cayman Islands"],
+    ["6","A","W","Australia"],["7","A","E","New Zealand"],["8","A","E","Argentina"],["8","F","K","Chile"],["8","L","R","Ecuador"],["8","S","W","Peru"],["8","X","2","Venezuela"],
+    ["9","A","E","Brazil"],["9","F","K","Colombia"],["9","L","R","Paraguay"],["9","S","W","Uruguay"],["9","X","2","Trinidad & Tobago"],["9","3","9","Brazil"]
+  ];
+  const ORDER = "ABCDEFGHJKLMNPRSTUVWXYZ1234567890";
+  function country(vin) {
+    const a = vin[0], b = ORDER.indexOf(vin[1]);
+    for (const [f, s, e, name] of COUNTRY_RANGES) {
+      if (f !== a) continue;
+      const si = ORDER.indexOf(s), ei = ORDER.indexOf(e);
+      if (b >= si && b <= ei) return name;
+    }
+    return null;
+  }
+
+  const WMI = {
+    "1HG":"Honda (USA)","1HF":"Honda motorcycles (USA)","JHM":"Honda (Japan)","2HG":"Honda (Canada)","5FN":"Honda (USA, trucks/SUVs)","19X":"Honda (USA)",
+    "JH4":"Acura (Japan)","19U":"Acura (USA)","1FA":"Ford (USA, cars)","1FT":"Ford (USA, trucks)","1FM":"Ford (USA, MPV/SUV)","1FD":"Ford (USA, incomplete)","3FA":"Ford (Mexico)","WF0":"Ford (Germany)",
+    "1LN":"Lincoln (USA)","5LM":"Lincoln (USA, SUV)","1G1":"Chevrolet (USA)","1GC":"Chevrolet (USA, trucks)","1GN":"Chevrolet (USA, SUV)","2G1":"Chevrolet (Canada)","3G1":"Chevrolet (Mexico)","KL1":"Chevrolet (South Korea)",
+    "1GT":"GMC (USA, trucks)","1GK":"GMC (USA, SUV)","1G6":"Cadillac (USA)","1GY":"Cadillac (USA)","1G4":"Buick (USA)","1C3":"Chrysler (USA)","2C3":"Chrysler (Canada)","1C4":"Jeep / Chrysler (USA, MPV)",
+    "1J4":"Jeep (USA)","1C6":"Ram (USA, trucks)","3C6":"Ram (Mexico)","1B3":"Dodge (USA)","2B3":"Dodge (Canada)","1D7":"Dodge (USA, trucks)","2C4":"Chrysler / Dodge (Canada, MPV)",
+    "4T1":"Toyota (USA, Kentucky)","4T3":"Toyota (USA, SUV)","5TD":"Toyota (USA, MPV)","5TF":"Toyota (USA, trucks)","JTD":"Toyota (Japan)","JTE":"Toyota (Japan, MPV)","JTN":"Toyota (Japan)","2T1":"Toyota (Canada)","JT2":"Toyota (Japan)",
+    "JTH":"Lexus (Japan)","2T2":"Lexus (Canada)","1N4":"Nissan (USA)","1N6":"Nissan (USA, trucks)","5N1":"Nissan (USA, SUV)","JN1":"Nissan (Japan)","JN8":"Nissan (Japan, SUV)","3N1":"Nissan (Mexico)","JNK":"Infiniti (Japan)",
+    "KMH":"Hyundai (South Korea)","5NP":"Hyundai (USA)","KM8":"Hyundai (South Korea, SUV)","KNA":"Kia (South Korea)","KND":"Kia (South Korea, MPV)","5XY":"Kia (USA)","3KP":"Kia (Mexico)","KMT":"Genesis (South Korea)",
+    "JM1":"Mazda (Japan)","JM3":"Mazda (Japan, MPV)","JF1":"Subaru (Japan)","JF2":"Subaru (Japan, MPV)","4S3":"Subaru (USA)","4S4":"Subaru (USA, MPV)","JA3":"Mitsubishi (Japan)","JA4":"Mitsubishi (Japan, MPV)","JS1":"Suzuki motorcycles (Japan)","JS2":"Suzuki (Japan)",
+    "5YJ":"Tesla (USA, Fremont)","7SA":"Tesla (USA)","LRW":"Tesla (China)","XP7":"Tesla (Germany)","7G2":"Tesla (USA, Semi)","WBA":"BMW (Germany)","WBS":"BMW M (Germany)","WBY":"BMW i (Germany)","5UX":"BMW (USA, SUV)","5YM":"BMW M (USA, SUV)","WMW":"MINI (Germany/UK)",
+    "WDD":"Mercedes-Benz (Germany)","WDB":"Mercedes-Benz (Germany)","WDC":"Mercedes-Benz (Germany, SUV)","W1K":"Mercedes-Benz (Germany)","W1N":"Mercedes-Benz (Germany, SUV)","4JG":"Mercedes-Benz (USA, SUV)","55S":"Mercedes-Benz (USA)",
+    "WAU":"Audi (Germany)","WA1":"Audi (Germany, SUV)","WUA":"Audi Sport (Germany)","WVW":"Volkswagen (Germany)","WVG":"Volkswagen (Germany, SUV)","3VW":"Volkswagen (Mexico)","1VW":"Volkswagen (USA)",
+    "WP0":"Porsche (Germany)","WP1":"Porsche (Germany, SUV)","YV1":"Volvo (Sweden)","YV4":"Volvo (Sweden, SUV)","7JR":"Volvo (USA)","SAL":"Land Rover (UK)","SAJ":"Jaguar (UK)","SCC":"Lotus (UK)","SCF":"Aston Martin (UK)","SCB":"Bentley (UK)","SCA":"Rolls-Royce (UK)",
+    "ZFF":"Ferrari (Italy)","ZHW":"Lamborghini (Italy)","ZAM":"Maserati (Italy)","ZAR":"Alfa Romeo (Italy)","ZFA":"Fiat (Italy)","ZAC":"Jeep / Fiat (Italy)","VF1":"Renault (France)","VF3":"Peugeot (France)","VF7":"Citroën (France)","VSS":"SEAT (Spain)","TMB":"Škoda (Czech Republic)",
+    "LFV":"FAW-Volkswagen (China)","LSV":"SAIC Volkswagen (China)","LVS":"Changan Ford (China)","LGX":"BYD (China)","LC0":"BYD (China)","L6T":"Geely (China)","LB3":"Geely (China)","MA1":"Mahindra (India)","MAT":"Tata Motors (India)","MAJ":"Ford (India)","MA3":"Maruti Suzuki (India)","MAL":"Hyundai (India)",
+    "7FC":"Rivian (USA)","1RN":"Rivian (USA)","5UJ":"Lucid (USA)","3HG":"Honda (Mexico)","93H":"Honda (Brazil)","9BW":"Volkswagen (Brazil)","9BG":"Chevrolet (Brazil)","8AJ":"Toyota (Argentina)",
+    "1HD":"Harley-Davidson (USA)","JYA":"Yamaha (Japan)","JKA":"Kawasaki (Japan)","ZDM":"Ducati (Italy)"
+  };
+  function wmiName(vin) {
+    return WMI[vin.slice(0,3)] || null;
+  }
+
+  function analyze(vin) {
+    const cd = checkDigit(vin);
+    const years = modelYears(vin);
+    const smallMfr = vin[2] === "9";
+    return {
+      vin,
+      wmi: vin.slice(0,3), vds: vin.slice(3,8), check: vin[8], year: vin[9], plant: vin[10], serial: vin.slice(11),
+      region: region(vin[0]), country: country(vin), manufacturer: wmiName(vin),
+      expectedCheck: cd, checkValid: cd === vin[8],
+      modelYears: years, smallMfr,
+      mfrCode: smallMfr ? vin.slice(11,14) : null
+    };
+  }
+
+  function validate(vin) {
+    if (vin.length !== 17) return `A VIN has 17 characters — this one has ${vin.length}.`;
+    const bad = vin.match(/[IOQ]/g);
+    if (bad) return `VINs never contain the letters I, O or Q (found: ${[...new Set(bad)].join(", ")}). Did you mean 1 or 0?`;
+    if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) return "VINs contain only letters A–Z (except I, O, Q) and digits 0–9.";
+    return null;
+  }
+
+  /* ---------- Remote decode (NHTSA vPIC) ---------- */
+  async function fetchNhtsa(vin, year) {
+    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${vin}?format=json${year ? "&modelyear=" + year : ""}`;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const j = await res.json();
+      return (j.Results && j.Results[0]) || null;
+    } finally { clearTimeout(t); }
+  }
+
+  /* ---------- Rendering ---------- */
+  const SECTIONS = [
+    ["Vehicle", [["Make","Make"],["Model","Model"],["Model Year","ModelYear"],["Trim","Trim"],["Trim 2","Trim2"],["Series","Series"],["Series 2","Series2"],["Vehicle Type","VehicleType"],["Body Class","BodyClass"],["Doors","Doors"],["Seats","Seats"],["Seat Rows","SeatRows"],["Gross Vehicle Weight","GVWR"],["Wheelbase (in)","WheelBaseShort"],["Bed Type","BedType"],["Cab Type","BodyCabType"]]],
+    ["Engine", [["Cylinders","EngineCylinders"],["Displacement (L)","DisplacementL"],["Displacement (cc)","DisplacementCC"],["Horsepower","EngineHP"],["Engine Model","EngineModel"],["Configuration","EngineConfiguration"],["Engine Manufacturer","EngineManufacturer"],["Fuel Type","FuelTypePrimary"],["Secondary Fuel","FuelTypeSecondary"],["Fuel Injection","FuelInjectionType"],["Turbo","Turbo"],["Valve Train","ValveTrainDesign"],["Electrification","ElectrificationLevel"],["Battery (kWh)","BatteryKWh"],["Battery Type","BatteryType"],["EV Drive Unit","EVDriveUnit"]]],
+    ["Drivetrain", [["Drive Type","DriveType"],["Transmission","TransmissionStyle"],["Speeds","TransmissionSpeeds"],["Axles","Axles"],["Brake System","BrakeSystemType"],["Wheel Size Front","WheelSizeFront"],["Wheel Size Rear","WheelSizeRear"],["Top Speed (mph)","TopSpeedMPH"]]],
+    ["Manufacturing", [["Manufacturer","Manufacturer"],["Plant Company","PlantCompanyName"],["Plant City","PlantCity"],["Plant State","PlantState"],["Plant Country","PlantCountry"],["Destination Market","DestinationMarket"],["Base Price ($)","BasePrice"],["NCSA Make","NCSAMake"],["NCSA Model","NCSAModel"]]],
+    ["Safety", [["Front Airbags","AirBagLocFront"],["Side Airbags","AirBagLocSide"],["Curtain Airbags","AirBagLocCurtain"],["Knee Airbags","AirBagLocKnee"],["ABS","ABS"],["Stability Control","ESC"],["Traction Control","TractionControl"],["TPMS","TPMS"],["Seat Belts","SeatBeltsAll"],["Pretensioner","Pretensioner"],["Backup Camera","RearVisibilitySystem"],["Auto Emergency Braking","CIB"],["Forward Collision Warning","ForwardCollisionWarning"],["Lane Departure Warning","LaneDepartureWarning"],["Lane Keep Assist","LaneKeepSystem"],["Blind Spot Warning","BlindSpotMon"],["Adaptive Cruise","AdaptiveCruiseControl"],["Daytime Running Lights","DaytimeRunningLight"],["Headlamp Type","LowerBeamHeadlampLightSource"],["Keyless Ignition","KeylessIgnition"]]]
+  ];
+  const IGNORE = new Set(["VIN","ErrorCode","ErrorText","AdditionalErrorText","SuggestedVIN","PossibleValues","VehicleDescriptor","Note"]);
+  const isEmpty = (v) => v == null || v === "" || v === "Not Applicable";
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const human = (k) => k.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+
+  let current = null;
+
+  function render(local, data) {
+    current = { local, data };
+    const d = data || {};
+    const year = d.ModelYear || local.modelYears.join(" or ");
+    const make = d.Make || (local.manufacturer || "").replace(/\s*\(.*\)$/, "") || "Unknown make";
+    const model = d.Model || "";
+    const trim = [d.Trim, d.Series].filter(Boolean).join(" · ");
+
+    $("r-vin").textContent = local.vin;
+    $("r-title").textContent = [year, make, model].filter(Boolean).join(" ");
+    $("r-sub").textContent = [trim, d.BodyClass, d.VehicleType].filter(Boolean).join(" — ") || "Basic analysis from VIN structure";
+
+    const badges = [];
+    badges.push(local.checkValid
+      ? `<span class="badge ok">✓ Check digit valid</span>`
+      : `<span class="badge ${local.region === "North America" ? "bad" : "warn"}">${local.region === "North America" ? "✗" : "!"} Check digit ${esc(local.check)} (expected ${esc(local.expectedCheck)})</span>`);
+    if (d.FuelTypePrimary) badges.push(`<span class="badge">${esc(d.FuelTypePrimary)}</span>`);
+    if (d.DriveType) badges.push(`<span class="badge">${esc(d.DriveType)}</span>`);
+    if (d.ElectrificationLevel) badges.push(`<span class="badge">${esc(d.ElectrificationLevel)}</span>`);
+    if (d.PlantCountry || local.country) badges.push(`<span class="badge">Built in ${esc(titleCase(d.PlantCountry || local.country))}</span>`);
+    if (!data) badges.push(`<span class="badge warn">Online database unavailable — offline analysis only</span>`);
+    else if (d.ErrorCode && d.ErrorCode !== "0") badges.push(`<span class="badge warn" title="${esc(d.ErrorText || "")}">Decoder note: ${esc(firstSentence(d.ErrorText))}</span>`);
+    $("r-badges").innerHTML = badges.map((b, i) => b.replace('<span class="badge', `<span style="--i:${i}" class="badge`)).join("");
+
+    renderAnatomy(local, d);
+    renderSections(d);
+    renderAll(d);
+    $("results").style.display = "block";
+    replay(document.querySelector("#results .hero"), 0);
+    replay(document.querySelector("#results .anatomy"), 1);
+    replay(document.querySelector("#results .all"), 7);
+    scramble($("r-title"), $("r-title").textContent, 700);
+  }
+
+  /* ---------- Motion helpers ---------- */
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function replay(el, i) {
+    if (!el) return;
+    el.classList.remove("reveal"); void el.offsetWidth;
+    el.style.setProperty("--i", i); el.classList.add("reveal");
+  }
+  const GLYPHS = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789";
+  function scramble(el, finalText, duration, single) {
+    if (reduceMotion) { el.textContent = finalText; return; }
+    const start = performance.now();
+    const chars = [...finalText];
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      if (t >= 1) { el.textContent = finalText; return; }
+      el.textContent = single
+        ? GLYPHS[(Math.random() * GLYPHS.length) | 0]
+        : chars.map((c, k) => (c === " " || k / chars.length < t) ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0]).join("");
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  const titleCase = (s) => String(s).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\(([^)]*)\)/, (m) => m.toUpperCase());
+  const firstSentence = (s) => (s || "").split(/;|\.\s/)[0].replace(/^\d+\s*-\s*/, "").slice(0, 90);
+
+  function renderAnatomy(l, d) {
+    const segs = [
+      { from: 0, to: 3, color: "--seg1", name: "WMI", label: "World Manufacturer ID", value: l.wmi,
+        desc: [d.Manufacturer || l.manufacturer, [l.country, l.region].filter(Boolean).join(", ")].filter(Boolean).join(" — ") || l.region },
+      { from: 3, to: 8, color: "--seg2", name: "VDS", label: "Vehicle Descriptor", value: l.vds,
+        desc: [d.Model, d.BodyClass, d.EngineCylinders && d.EngineCylinders + " cyl", d.DisplacementL && (+d.DisplacementL).toFixed(1) + " L"].filter(Boolean).join(", ") || "Model, body, engine and restraint codes" },
+      { from: 8, to: 9, color: "--seg3", name: "Check", label: "Check digit", value: l.check,
+        desc: l.checkValid ? "Valid — matches computed value" : `Computed ${l.expectedCheck}${l.region === "North America" ? " — mismatch, possible typo" : " — not required outside North America"}` },
+      { from: 9, to: 10, color: "--seg4", name: "Year", label: "Model year", value: l.year,
+        desc: d.ModelYear || l.modelYears.join(" or ") || "Unknown code" },
+      { from: 10, to: 11, color: "--seg5", name: "Plant", label: "Assembly plant", value: l.plant,
+        desc: [d.PlantCity, d.PlantState, d.PlantCountry].filter(Boolean).map(titleCase).join(", ") || "Manufacturer-specific plant code" },
+      { from: 11, to: 17, color: "--seg6", name: "Serial", label: "Production sequence", value: l.serial,
+        desc: l.smallMfr ? `Small manufacturer (code ${l.mfrCode}), serial ${l.vin.slice(14)}` : "Unique production number" }
+    ];
+    let chars = "";
+    for (let i = 0; i < 17; i++) {
+      const s = segs.find((x) => i >= x.from && i < x.to);
+      chars += `<div class="ch" style="--i:${i};border-color:var(${s.color})" title="${s.label}"><b>${esc(l.vin[i])}</b><span>${i + 1}</span></div>`;
+    }
+    $("chars").innerHTML = chars;
+    $("chars").querySelectorAll(".ch b").forEach((b, i) => scramble(b, l.vin[i], 260 + i * 40, true));
+    $("legend").innerHTML = segs.map((s, i) => `
+      <div class="leg" style="--i:${i};border-color:var(${s.color})">
+        <div class="t">${s.from + 1}${s.to - s.from > 1 ? "–" + s.to : ""} · ${s.label}</div>
+        <div class="v mono">${esc(s.value)}</div>
+        <div class="d">${esc(s.desc)}</div>
+      </div>`).join("");
+  }
+
+  function renderSections(d) {
+    $("sections").innerHTML = SECTIONS.map(([title, fields], si) => {
+      const rows = fields.filter(([, k]) => !isEmpty(d[k])).map(([label, k], i) => `<dt style="--i:${i}">${label}</dt><dd style="--i:${i}">${esc(d[k])}</dd>`).join("");
+      return `<section class="card section reveal" style="--i:${si + 2}"><h3>${title}</h3>${rows ? `<dl>${rows}</dl>` : `<div class="empty">No ${title.toLowerCase()} data encoded for this VIN.</div>`}</section>`;
+    }).join("");
+  }
+
+  function allEntries(d) {
+    return Object.entries(d).filter(([k, v]) => !IGNORE.has(k) && !isEmpty(v) && !/ID$/.test(k));
+  }
+
+  function renderAll(d) {
+    const q = $("filter").value.trim().toLowerCase();
+    const rows = allEntries(d).filter(([k, v]) => !q || human(k).toLowerCase().includes(q) || String(v).toLowerCase().includes(q));
+    $("all-count").textContent = `(${rows.length})`;
+    $("all-body").innerHTML = rows.length
+      ? rows.map(([k, v]) => `<tr><td>${esc(human(k))}</td><td>${esc(v)}</td></tr>`).join("")
+      : `<tr><td colspan="2" class="empty">${Object.keys(d).length ? "No fields match the filter." : "No online data available."}</td></tr>`;
+  }
+
+  /* ---------- History ---------- */
+  const HKEY = "vin-decoder-history";
+  function getHistory() { try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch { return []; } }
+  function addHistory(vin, label) {
+    try {
+      const h = getHistory().filter((x) => x.vin !== vin);
+      h.unshift({ vin, label });
+      localStorage.setItem(HKEY, JSON.stringify(h.slice(0, 8)));
+    } catch {}
+    showHistory();
+  }
+  function showHistory() {
+    const h = getHistory();
+    $("history").innerHTML = h.length ? "Recent: " + h.map((x) => `<button class="chip" data-vin="${esc(x.vin)}" title="${esc(x.label)}">${esc(x.vin)}</button>`).join("") : "";
+  }
+
+  /* ---------- Wiring ---------- */
+  const input = $("vin");
+  function cleanVin(s) { return s.toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  input.addEventListener("input", () => {
+    const v = cleanVin(input.value);
+    if (v !== input.value) input.value = v;
+    const c = $("count");
+    c.textContent = `${v.length} / 17`;
+    c.className = "count " + (v.length === 17 ? (validate(v) ? "bad" : "ok") : "");
+  });
+
+  async function decode(vin) {
+    vin = cleanVin(vin);
+    input.value = vin; input.dispatchEvent(new Event("input"));
+    const status = $("status");
+    const err = validate(vin);
+    if (err) { status.className = "error"; status.textContent = err; return; }
+
+    const local = analyze(vin);
+    status.className = ""; status.innerHTML = `<span class="spinner"></span>Analyzing ${esc(vin)}…`;
+    $("form").closest(".search").classList.add("busy");
+    $("go").disabled = true;
+    let data = null;
+    try {
+      data = await fetchNhtsa(vin, local.modelYears.length === 1 ? local.modelYears[0] : null);
+    } catch (e) {
+      data = null;
+    }
+    $("go").disabled = false;
+    $("form").closest(".search").classList.remove("busy");
+    status.textContent = "";
+    render(local, data);
+    addHistory(vin, $("r-title").textContent);
+    try { history.replaceState(null, "", "#" + vin); } catch {}
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); decode(input.value); });
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-vin]");
+    if (t) { e.preventDefault(); decode(t.dataset.vin); }
+  });
+  $("filter").addEventListener("input", () => current && renderAll(current.data || {}));
+
+  function reportText() {
+    const { local, data } = current; const d = data || {};
+    const lines = [`VIN Report: ${local.vin}`, $("r-title").textContent, $("r-sub").textContent, "",
+      `WMI ${local.wmi} | VDS ${local.vds} | Check ${local.check} (${local.checkValid ? "valid" : "expected " + local.expectedCheck}) | Year ${local.year} | Plant ${local.plant} | Serial ${local.serial}`,
+      `Region: ${local.region}${local.country ? " / " + local.country : ""}`, ""];
+    for (const [k, v] of allEntries(d)) lines.push(`${human(k)}: ${v}`);
+    return lines.join("\n");
+  }
+  $("copy").addEventListener("click", async () => {
+    if (!current) return;
+    try { await navigator.clipboard.writeText(reportText()); $("copy").textContent = "Copied ✓"; }
+    catch { $("copy").textContent = "Copy failed"; }
+    setTimeout(() => ($("copy").textContent = "Copy report"), 1600);
+  });
+  /* ---------- Claude viewer capabilities (only when opened on claude.ai) ---------- */
+  const capP = (name) => (window.claude && typeof window.claude.use === "function")
+    ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
+  const samplerP = capP("sample");
+  const downloadsP = capP("downloads");
+
+  $("json").addEventListener("click", async () => {
+    if (!current) return;
+    const text = JSON.stringify({ analysis: current.local, decoded: Object.fromEntries(allEntries(current.data || {})) }, null, 2);
+    const filename = `vin-${current.local.vin}.json`;
+    const dl = await downloadsP;
+    if (dl) { try { await dl.save({ filename, data: text }); } catch {} return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  /* ---------- Image analysis ---------- */
+  let imgFile = null, imgCtl = null, aiOK = false;
+  const imgStatus = (msg, isErr) => { const s = $("img-status"); s.className = isErr ? "error" : ""; s.innerHTML = msg; };
+
+  // Pick the engine: Claude vision inside claude.ai, otherwise in-browser OCR (Tesseract.js)
+  (async () => {
+    const sample = await samplerP;
+    if (sample) {
+      const lim = await sample.limits().catch(() => null);
+      aiOK = !!(lim && lim.images);
+    }
+    $("img-mode").textContent = aiOK
+      ? "Engine: Claude vision — identifies the vehicle and reads any VIN."
+      : "Engine: in-browser text recognition (OCR) — reads the VIN from a photo of the VIN plate or sticker.";
+  })();
+  $("img-mode").textContent = "Engine: checking…";
+
+  function setImage(file) {
+    if (!file || !/^image\//.test(file.type)) { imgStatus("Please choose an image file.", true); return; }
+    imgFile = file;
+    const prev = $("img-preview");
+    if (prev.src) URL.revokeObjectURL(prev.src);
+    prev.src = URL.createObjectURL(file);
+    $("img-row").style.display = "flex";
+    $("img-result").style.display = "none";
+    imgStatus("");
+  }
+  $("img-input").addEventListener("change", (e) => { setImage(e.target.files[0]); e.target.value = ""; });
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => setImage(e.dataTransfer.files[0]));
+  document.addEventListener("paste", (e) => {
+    const f = [...(e.clipboardData?.files || [])].find((x) => /^image\//.test(x.type));
+    if (f) setImage(f);
+  });
+  $("img-clear").addEventListener("click", () => {
+    imgFile = null; imgCtl?.abort();
+    $("img-row").style.display = "none"; $("img-result").style.display = "none"; imgStatus("");
+  });
+  $("img-stop").addEventListener("click", () => imgCtl?.abort());
+
+  // Find VIN candidates in OCR / model text. Fixes common misreads (I→1, O/Q→0).
+  function findVins(text) {
+    const up = text.toUpperCase();
+    const tokens = new Set();
+    const raw = up.replace(/[^A-Z0-9\n]/g, " ");
+    for (const m of raw.matchAll(/[A-Z0-9]{17,}/g)) {
+      const s = m[0];
+      for (let i = 0; i + 17 <= s.length; i++) tokens.add(s.slice(i, i + 17));
+    }
+    const squashed = up.replace(/[^A-Z0-9]/g, "");
+    for (let i = 0; i + 17 <= squashed.length; i++) tokens.add(squashed.slice(i, i + 17));
+    const out = new Map();
+    for (let t of tokens) {
+      t = t.replace(/I/g, "1").replace(/[OQ]/g, "0");
+      if (validate(t) || !/\d/.test(t) || !/[A-Z]/.test(t)) continue;
+      const a = analyze(t);
+      let score = 0;
+      if (a.checkValid) score += 5;
+      if (a.manufacturer) score += 3;
+      if (a.country) score += 1;
+      if (a.modelYears.length) score += 1;
+      if (/^\d{4,}$/.test(t.slice(13))) score += 1;
+      if (score >= 4 && (!out.has(t) || out.get(t) < score)) out.set(t, score);
+    }
+    return [...out.entries()].sort((a, b) => b[1] - a[1]).map(([vin, score]) => ({ vin, valid: analyze(vin).checkValid, score }));
+  }
+
+  let tessP = null;
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    return tessP ||= new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+      s.onload = () => res(window.Tesseract);
+      s.onerror = () => { tessP = null; rej(new Error("Could not load the OCR engine (check your internet connection).")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  const AI_PROMPT = `You are an automotive expert. Analyze the attached photo.
+1. If any Vehicle Identification Number (VIN, 17 characters, never contains I, O or Q) is visible anywhere — VIN plate, door-jamb sticker, windshield, registration document, engine bay — transcribe it exactly.
+2. If a vehicle is visible, identify it as precisely as the image allows.
+Reply with ONLY a JSON object of this shape (use null when unknown, never invent a VIN):
+{"is_vehicle_photo": true, "vin": "1HGCM82633A004352" or null, "vin_confidence": "high"|"medium"|"low"|null, "vin_location": "where the VIN appears" or null,
+ "make": "", "model": "", "generation_or_trim": "", "year_range": "e.g. 2018-2021", "vehicle_type": "e.g. Passenger car / SUV / Pickup / Motorcycle / Truck / Bus",
+ "body_style": "e.g. Sedan, Hatchback, Crew-cab pickup", "color": "", "fuel_or_powertrain_guess": "", "drivetrain_guess": "",
+ "identification_confidence": "high"|"medium"|"low", "key_visual_clues": ["badge", "grille shape", "..."], "condition_notes": "visible damage, wear or modifications", "other_text_seen": "plates, badges, labels", "summary": "one or two sentences"}`;
+
+  async function analyzeWithClaude(sample) {
+    imgCtl = new AbortController();
+    imgStatus(`<span class="spinner"></span>Claude is looking at the photo… (this can take 10–40 s)`);
+    const r = await sample.json(AI_PROMPT, { images: [imgFile], signal: imgCtl.signal, cache: false });
+    if (!r || typeof r !== "object") throw { code: "invalid_json" };
+    return r;
+  }
+
+  async function analyzeWithOcr() {
+    imgStatus(`<span class="spinner"></span>Loading text-recognition engine…`);
+    const T = await loadTesseract();
+    let aborted = false;
+    imgCtl = new AbortController();
+    imgCtl.signal.addEventListener("abort", () => { aborted = true; });
+    const { data } = await T.recognize(imgFile, "eng", {
+      logger: (m) => {
+        if (m.status === "recognizing text") imgStatus(`<span class="spinner"></span>Reading text… ${Math.round(m.progress * 100)}%`);
+      }
+    });
+    if (aborted) throw { code: "cancelled" };
+    return data.text || "";
+  }
+
+  function renderImageResult(ai, ocrText) {
+    const box = $("img-result");
+    let vins = [];
+    if (ai && ai.vin) vins = findVins(String(ai.vin));
+    if (ai && !vins.length && ai.other_text_seen) vins = findVins(String(ai.other_text_seen));
+    if (ocrText != null) vins = findVins(ocrText);
+
+    let html = "";
+    if (vins.length) {
+      html += vins.slice(0, 3).map((v, i) => `
+        <div class="vin-found" style="--i:${i}">
+          <span>${i === 0 ? "VIN found:" : "Also possible:"}</span>
+          <span class="mono">${esc(v.vin)}</span>
+          <span class="badge ${v.valid ? "ok" : "warn"}">${v.valid ? "✓ check digit valid" : "check digit not verified"}</span>
+          <button class="primary" data-vin="${esc(v.vin)}">Decode this VIN</button>
+        </div>`).join("");
+    } else {
+      html += `<div class="vin-found none">No readable VIN found in this image. ${ai ? "" : "For best results, crop close to the VIN plate or sticker with good light and no glare."}</div>`;
+    }
+
+    if (ai && ai.is_vehicle_photo !== false && (ai.make || ai.model)) {
+      const title = [ai.year_range, ai.make, ai.model].filter(Boolean).join(" ");
+      const rows = [
+        ["Make", ai.make], ["Model", ai.model], ["Generation / trim", ai.generation_or_trim], ["Year range", ai.year_range],
+        ["Vehicle type", ai.vehicle_type], ["Body style", ai.body_style], ["Color", ai.color],
+        ["Powertrain (estimate)", ai.fuel_or_powertrain_guess], ["Drivetrain (estimate)", ai.drivetrain_guess],
+        ["Confidence", ai.identification_confidence], ["VIN location", ai.vin_location], ["Condition", ai.condition_notes], ["Other text seen", ai.other_text_seen]
+      ].filter(([, v]) => v != null && v !== "");
+      html += `<section class="card section reveal" style="--i:3">
+        <h4>${esc(title)}</h4>
+        ${ai.summary ? `<p class="sum">${esc(ai.summary)}</p>` : ""}
+        <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+        ${Array.isArray(ai.key_visual_clues) && ai.key_visual_clues.length ? `<div style="margin-top:12px;color:var(--muted);font-size:13px">Identified from:</div><ul class="feat">${ai.key_visual_clues.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+        <p class="mode" style="margin:12px 0 0">Photo identification is an estimate. The decoded VIN is the authoritative source for exact model, year and specs.</p>
+      </section>`;
+    } else if (ai && ai.summary) {
+      html += `<p class="sum">${esc(ai.summary)}</p>`;
+    }
+    if (ocrText != null && ocrText.trim()) {
+      html += `<details style="margin-top:10px"><summary class="mode" style="cursor:pointer">Text read from the image</summary><pre class="mono" style="white-space:pre-wrap;font-size:13px;background:var(--surface-2);padding:10px;border-radius:8px">${esc(ocrText.trim())}</pre></details>`;
+    }
+    box.innerHTML = html;
+    box.style.display = "block";
+    return vins;
+  }
+
+  const AI_ERRORS = {
+    not_granted: "Permission to use Claude was declined, so the page used text recognition instead.",
+    rate_limited: "Too many requests right now — wait a minute and try again.",
+    image_rejected: "This image could not be processed. Try a JPG or PNG under 5 MB.",
+    refused: "Claude could not analyze this image.",
+    invalid_json: "The answer could not be read. Try again.",
+    cancelled: "Stopped."
+  };
+
+  $("img-go").addEventListener("click", async () => {
+    if (!imgFile) return;
+    $("img-go").disabled = true; $("img-stop").hidden = false; $("pv").classList.add("busy");
+    try {
+      const sample = aiOK ? await samplerP : null;
+      if (sample) {
+        try {
+          const ai = await analyzeWithClaude(sample);
+          imgStatus("");
+          const vins = renderImageResult(ai, null);
+          if (vins.length && vins[0].valid) decode(vins[0].vin);
+          return;
+        } catch (e) {
+          if (e && e.code === "cancelled") { imgStatus("Stopped."); return; }
+          if (e && e.code === "not_granted") aiOK = false;
+          if (!e || e.code !== "not_granted") { imgStatus(AI_ERRORS[e && e.code] || "Image analysis failed. Try again.", true); return; }
+        }
+      }
+      const text = await analyzeWithOcr();
+      imgStatus("");
+      const vins = renderImageResult(null, text);
+      if (vins.length && vins[0].valid) decode(vins[0].vin);
+    } catch (e) {
+      imgStatus(e && e.code === "cancelled" ? "Stopped." : esc((e && e.message) || "Image analysis failed."), !(e && e.code === "cancelled"));
+    } finally {
+      $("img-go").disabled = false; $("img-stop").hidden = true; imgCtl = null; $("pv").classList.remove("busy");
+    }
+  });
+
+  showHistory();
+  const fromHash = cleanVin(decodeURIComponent(location.hash.slice(1)));
+  if (fromHash.length === 17) decode(fromHash);
+})();
+</script>
+</body>
+</html>
