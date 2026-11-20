@@ -134,7 +134,120 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+
+  /* ================= Motion ================= */
+  body { position: relative; isolation: isolate; }
+  body::before {
+    content: ""; position: fixed; inset: -25%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(38% 32% at 20% 18%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      radial-gradient(30% 28% at 82% 30%, color-mix(in srgb, var(--seg2) 11%, transparent), transparent 70%),
+      radial-gradient(34% 30% at 60% 88%, color-mix(in srgb, var(--seg6) 10%, transparent), transparent 70%);
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift { 0% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(3%,-2%,0) rotate(4deg); } 100% { transform: translate3d(-3%,2%,0) rotate(-3deg); } }
+
+  header h1, header p { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+  header p { animation-delay: .08s; }
+  header h1 .grad {
+    background: linear-gradient(90deg, var(--accent), var(--seg2), var(--seg6), var(--accent));
+    background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: sheen 8s linear infinite;
+  }
+  @keyframes sheen { to { background-position: 300% 0; } }
+
+  /* header scene: road, car, scanning beam */
+  .scene {
+    position: relative; height: 104px; margin-top: 22px; overflow: hidden; border-radius: 14px;
+    border: 1px solid var(--border); background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    animation: rise .7s .16s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .scene .sky { position: absolute; inset: 0; background-image: radial-gradient(circle, color-mix(in srgb, var(--muted) 35%, transparent) 1px, transparent 1.5px); background-size: 26px 26px; opacity: .35; animation: road 3.5s linear infinite; }
+  .scene .road { position: absolute; left: 0; right: 0; bottom: 16px; height: 3px; border-radius: 2px;
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--muted) 70%, transparent) 0 30px, transparent 30px 60px);
+    background-size: 60px 3px; animation: road .55s linear infinite; }
+  .scene .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; background: color-mix(in srgb, var(--muted) 10%, transparent); }
+  @keyframes road { to { background-position: -60px 0; } }
+  .scene .car { position: absolute; left: 50%; bottom: 13px; width: 156px; margin-left: -78px; color: var(--accent); animation: cruise 10s ease-in-out infinite; }
+  .scene .car .body { animation: bob .45s ease-in-out infinite alternate; }
+  .scene .car .wheel { transform-box: fill-box; transform-origin: center; animation: spin .45s linear infinite; }
+  .scene .speed { position: absolute; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accent)); opacity: .5; animation: whoosh 1.1s linear infinite; }
+  .scene .speed:nth-of-type(1) { top: 34px; width: 60px; animation-delay: 0s; }
+  .scene .speed:nth-of-type(2) { top: 52px; width: 90px; animation-delay: .35s; }
+  .scene .speed:nth-of-type(3) { top: 68px; width: 46px; animation-delay: .7s; }
+  @keyframes whoosh { from { left: 105%; } to { left: -20%; } }
+  @keyframes cruise { 0%,100% { transform: translateX(-140px); } 50% { transform: translateX(140px); } }
+  @keyframes bob { to { transform: translateY(-1.5px); } }
+  .scene .beam { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: var(--accent);
+    box-shadow: 0 0 22px 6px color-mix(in srgb, var(--accent) 45%, transparent); animation: beam 5s cubic-bezier(.6,0,.4,1) infinite; }
+  .scene .tag { position: absolute; top: 10px; right: 12px; font: 600 11px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .12em; color: var(--accent);
+    padding: 3px 8px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); background: var(--surface); }
+  .scene .tag::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; animation: blink 1.2s ease-in-out infinite; }
+  @keyframes beam { 0% { left: -4%; opacity: 0; } 8% { opacity: 1; } 55% { left: 104%; opacity: 1; } 56%,100% { left: 104%; opacity: 0; } }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  /* entrances */
+  .search { animation: rise .7s .22s cubic-bezier(.2,.7,.2,1) both; }
+  .img-card { animation: rise .7s .3s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+  .reveal { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+  .badge { animation: pop .45s cubic-bezier(.3,1.5,.5,1) both; animation-delay: calc(.25s + var(--i, 0) * 70ms); }
+  @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+  .chars { perspective: 600px; }
+  .ch { animation: flip .55s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 38ms); transition: transform .2s, background .2s; }
+  .ch:hover { transform: translateY(-3px); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+  @keyframes flip { from { opacity: 0; transform: rotateX(-90deg) translateY(-8px); } to { opacity: 1; transform: none; } }
+  .leg { animation: slide .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.5s + var(--i, 0) * 70ms); }
+  @keyframes slide { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+  .section dt, .section dd { animation: fade .4s ease both; animation-delay: calc(var(--i, 0) * 80ms + .25s); }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .grid .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  /* buttons */
+  button { transition: transform .15s ease, box-shadow .2s ease, background .2s; position: relative; overflow: hidden; }
+  button:not(:disabled):hover { transform: translateY(-1px); }
+  button:not(:disabled):active { transform: scale(.97); }
+  button.primary:not(:disabled):hover { box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
+  button.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); transform: translateX(-120%); }
+  button.primary:not(:disabled):hover::after { animation: shine .8s ease; }
+  @keyframes shine { to { transform: translateX(120%); } }
+
+  /* busy states */
+  .search { position: relative; overflow: hidden; }
+  .search::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; opacity: 0;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--seg2), transparent); background-size: 50% 100%; background-repeat: no-repeat; transition: opacity .2s; }
+  .search.busy::after { opacity: 1; animation: load 1.1s ease-in-out infinite; }
+  @keyframes load { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+  .search.busy #vin { background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 16%, transparent), transparent); background-size: 40% 100%; background-repeat: no-repeat; animation: load 1.1s linear infinite; }
+  .count.ok { animation: pop .4s cubic-bezier(.3,1.5,.5,1); }
+
+  .drop svg { transition: transform .3s cubic-bezier(.3,1.5,.5,1); }
+  .drop:hover svg, .drop.over svg { transform: translateY(-4px) scale(1.08); }
+  .drop.over { transform: scale(1.01); }
+  .drop { transition: border-color .15s, transform .2s; }
+
+  .pv { position: relative; border-radius: 8px; overflow: hidden; flex: 0 0 auto; max-width: 100%; }
+  .pv img { display: block; }
+  .pv .scan, .pv .grid-ov { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .pv .grid-ov { background-image: linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+  .pv .scan::before { content: ""; position: absolute; left: 0; right: 0; height: 40%; top: -40%;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 35%, transparent) 85%, var(--accent)); animation: scan 1.6s cubic-bezier(.5,0,.5,1) infinite; }
+  .pv.busy .scan, .pv.busy .grid-ov { opacity: 1; }
+  .pv.busy img { filter: saturate(.6) contrast(1.05); }
+  @keyframes scan { from { top: -40%; } to { top: 100%; } }
+  .vin-found { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 90ms); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .scene .beam { display: none; }
+  }
+  @media print { .scene, body::before { display: none; } }
+
   @media (max-width: 640px) {
+    .scene { height: 88px; }
+    @keyframes cruise { 0%,100% { transform: translateX(-70px); } 50% { transform: translateX(70px); } }
     header h1 { font-size: 23px; }
     .chars { grid-template-columns: repeat(9, minmax(0, 1fr)); }
     .ch b { font-size: 17px; }
@@ -145,8 +258,25 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>VIN Decoder &amp; Vehicle Analyzer</h1>
+    <h1><span class="grad">VIN Decoder</span> &amp; Vehicle Analyzer</h1>
     <p>Enter a 17-character Vehicle Identification Number to see the make, model, model year, body type, engine, transmission, plant, safety equipment and every other field encoded for that vehicle.</p>
+    <div class="scene" aria-hidden="true">
+      <div class="sky"></div>
+      <span class="speed"></span><span class="speed"></span><span class="speed"></span>
+      <div class="ground"></div><div class="road"></div>
+      <svg class="car" viewBox="0 0 156 52" fill="none">
+        <g class="body">
+          <path d="M8 38 L12 27 Q16 24 28 23 L46 12 Q51 9 60 9 L92 9 Q100 9 107 15 L120 23 Q140 25 146 30 L148 38 Z" fill="currentColor" opacity=".9"/>
+          <path d="M50 22 L60 13 L76 13 L76 22 Z M81 22 L81 13 L92 13 Q98 13 103 17 L108 22 Z" fill="var(--surface)" opacity=".85"/>
+          <rect x="138" y="28" width="7" height="3" rx="1.5" fill="#ffd166"/>
+          <rect x="10" y="29" width="5" height="3" rx="1.5" fill="#ef476f"/>
+        </g>
+        <g class="wheel"><circle cx="36" cy="40" r="9" fill="var(--text)"/><circle cx="36" cy="40" r="4" fill="var(--surface-2)"/><path d="M36 31.5 V36 M36 44 V48.5 M27.5 40 H32 M40 40 H44.5" stroke="var(--surface-2)" stroke-width="1.6"/></g>
+        <g class="wheel"><circle cx="120" cy="40" r="9" fill="var(--text)"/><circle cx="120" cy="40" r="4" fill="var(--surface-2)"/><path d="M120 31.5 V36 M120 44 V48.5 M111.5 40 H116 M124 40 H128.5" stroke="var(--surface-2)" stroke-width="1.6"/></g>
+      </svg>
+      <div class="beam"></div>
+      <div class="tag">SCANNING VIN</div>
+    </div>
   </header>
 
   <section class="card search">
@@ -171,7 +301,7 @@
       <input type="file" id="img-input" accept="image/*" hidden>
     </label>
     <div class="img-row" id="img-row">
-      <img id="img-preview" alt="Uploaded vehicle photo">
+      <div class="pv" id="pv"><img id="img-preview" alt="Uploaded vehicle photo"><div class="grid-ov"></div><div class="scan"></div></div>
       <div class="img-side">
         <div class="mode" id="img-mode"></div>
         <div class="btns">
@@ -390,12 +520,39 @@
     if (d.PlantCountry || local.country) badges.push(`<span class="badge">Built in ${esc(titleCase(d.PlantCountry || local.country))}</span>`);
     if (!data) badges.push(`<span class="badge warn">Online database unavailable — offline analysis only</span>`);
     else if (d.ErrorCode && d.ErrorCode !== "0") badges.push(`<span class="badge warn" title="${esc(d.ErrorText || "")}">Decoder note: ${esc(firstSentence(d.ErrorText))}</span>`);
-    $("r-badges").innerHTML = badges.join("");
+    $("r-badges").innerHTML = badges.map((b, i) => b.replace('<span class="badge', `<span style="--i:${i}" class="badge`)).join("");
 
     renderAnatomy(local, d);
     renderSections(d);
     renderAll(d);
     $("results").style.display = "block";
+    replay(document.querySelector("#results .hero"), 0);
+    replay(document.querySelector("#results .anatomy"), 1);
+    replay(document.querySelector("#results .all"), 7);
+    scramble($("r-title"), $("r-title").textContent, 700);
+  }
+
+  /* ---------- Motion helpers ---------- */
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function replay(el, i) {
+    if (!el) return;
+    el.classList.remove("reveal"); void el.offsetWidth;
+    el.style.setProperty("--i", i); el.classList.add("reveal");
+  }
+  const GLYPHS = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789";
+  function scramble(el, finalText, duration, single) {
+    if (reduceMotion) { el.textContent = finalText; return; }
+    const start = performance.now();
+    const chars = [...finalText];
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      if (t >= 1) { el.textContent = finalText; return; }
+      el.textContent = single
+        ? GLYPHS[(Math.random() * GLYPHS.length) | 0]
+        : chars.map((c, k) => (c === " " || k / chars.length < t) ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0]).join("");
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 
   const titleCase = (s) => String(s).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\(([^)]*)\)/, (m) => m.toUpperCase());
@@ -419,11 +576,12 @@
     let chars = "";
     for (let i = 0; i < 17; i++) {
       const s = segs.find((x) => i >= x.from && i < x.to);
-      chars += `<div class="ch" style="border-color:var(${s.color})" title="${s.label}"><b>${esc(l.vin[i])}</b><span>${i + 1}</span></div>`;
+      chars += `<div class="ch" style="--i:${i};border-color:var(${s.color})" title="${s.label}"><b>${esc(l.vin[i])}</b><span>${i + 1}</span></div>`;
     }
     $("chars").innerHTML = chars;
-    $("legend").innerHTML = segs.map((s) => `
-      <div class="leg" style="border-color:var(${s.color})">
+    $("chars").querySelectorAll(".ch b").forEach((b, i) => scramble(b, l.vin[i], 260 + i * 40, true));
+    $("legend").innerHTML = segs.map((s, i) => `
+      <div class="leg" style="--i:${i};border-color:var(${s.color})">
         <div class="t">${s.from + 1}${s.to - s.from > 1 ? "–" + s.to : ""} · ${s.label}</div>
         <div class="v mono">${esc(s.value)}</div>
         <div class="d">${esc(s.desc)}</div>
@@ -431,9 +589,9 @@
   }
 
   function renderSections(d) {
-    $("sections").innerHTML = SECTIONS.map(([title, fields]) => {
-      const rows = fields.filter(([, k]) => !isEmpty(d[k])).map(([label, k]) => `<dt>${label}</dt><dd>${esc(d[k])}</dd>`).join("");
-      return `<section class="card section"><h3>${title}</h3>${rows ? `<dl>${rows}</dl>` : `<div class="empty">No ${title.toLowerCase()} data encoded for this VIN.</div>`}</section>`;
+    $("sections").innerHTML = SECTIONS.map(([title, fields], si) => {
+      const rows = fields.filter(([, k]) => !isEmpty(d[k])).map(([label, k], i) => `<dt style="--i:${i}">${label}</dt><dd style="--i:${i}">${esc(d[k])}</dd>`).join("");
+      return `<section class="card section reveal" style="--i:${si + 2}"><h3>${title}</h3>${rows ? `<dl>${rows}</dl>` : `<div class="empty">No ${title.toLowerCase()} data encoded for this VIN.</div>`}</section>`;
     }).join("");
   }
 
@@ -486,6 +644,7 @@
 
     const local = analyze(vin);
     status.className = ""; status.innerHTML = `<span class="spinner"></span>Analyzing ${esc(vin)}…`;
+    $("form").closest(".search").classList.add("busy");
     $("go").disabled = true;
     let data = null;
     try {
@@ -494,6 +653,7 @@
       data = null;
     }
     $("go").disabled = false;
+    $("form").closest(".search").classList.remove("busy");
     status.textContent = "";
     render(local, data);
     addHistory(vin, $("r-title").textContent);
@@ -662,7 +822,7 @@ Reply with ONLY a JSON object of this shape (use null when unknown, never invent
     let html = "";
     if (vins.length) {
       html += vins.slice(0, 3).map((v, i) => `
-        <div class="vin-found">
+        <div class="vin-found" style="--i:${i}">
           <span>${i === 0 ? "VIN found:" : "Also possible:"}</span>
           <span class="mono">${esc(v.vin)}</span>
           <span class="badge ${v.valid ? "ok" : "warn"}">${v.valid ? "✓ check digit valid" : "check digit not verified"}</span>
@@ -680,7 +840,7 @@ Reply with ONLY a JSON object of this shape (use null when unknown, never invent
         ["Powertrain (estimate)", ai.fuel_or_powertrain_guess], ["Drivetrain (estimate)", ai.drivetrain_guess],
         ["Confidence", ai.identification_confidence], ["VIN location", ai.vin_location], ["Condition", ai.condition_notes], ["Other text seen", ai.other_text_seen]
       ].filter(([, v]) => v != null && v !== "");
-      html += `<section class="card section">
+      html += `<section class="card section reveal" style="--i:3">
         <h4>${esc(title)}</h4>
         ${ai.summary ? `<p class="sum">${esc(ai.summary)}</p>` : ""}
         <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
@@ -709,7 +869,7 @@ Reply with ONLY a JSON object of this shape (use null when unknown, never invent
 
   $("img-go").addEventListener("click", async () => {
     if (!imgFile) return;
-    $("img-go").disabled = true; $("img-stop").hidden = false;
+    $("img-go").disabled = true; $("img-stop").hidden = false; $("pv").classList.add("busy");
     try {
       const sample = aiOK ? await samplerP : null;
       if (sample) {
@@ -732,7 +892,7 @@ Reply with ONLY a JSON object of this shape (use null when unknown, never invent
     } catch (e) {
       imgStatus(e && e.code === "cancelled" ? "Stopped." : esc((e && e.message) || "Image analysis failed."), !(e && e.code === "cancelled"));
     } finally {
-      $("img-go").disabled = false; $("img-stop").hidden = true; imgCtl = null;
+      $("img-go").disabled = false; $("img-stop").hidden = true; imgCtl = null; $("pv").classList.remove("busy");
     }
   });
 
