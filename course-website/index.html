@@ -3,181 +3,207 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reselling Course Malayalam — Meesho Reselling A to Z</title>
-<meta name="description" content="Meesho Reselling Course in Malayalam — 28 modules. Product selection മുതൽ Instagram marketing, WhatsApp sales, order handling, profit calculation വരെ A to Z പഠിക്കാം.">
+<title>Reselling Course Malayalam</title>
+<meta name="description" content="Meesho Reselling Course in Malayalam — 28 modules. Smartphone മാത്രം മതി. Product selection മുതൽ Instagram marketing, WhatsApp sales, profit calculation വരെ A to Z.">
 <meta property="og:title" content="Meesho Reselling Course — Malayalam">
-<meta property="og:description" content="28 Modules • Final Project • Stock ഇല്ലാതെ സ്വന്തം Online Reselling Business തുടങ്ങാം.">
+<meta property="og:description" content="Stock ഇല്ലാതെ സ്വന്തം Online Reselling Business തുടങ്ങാം. 28 Modules • Final Project.">
 <meta property="og:image" content="assets/workflow.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#7b1fa2; --brand-2:#c2185b; --brand-dark:#4a0e6b;
-  --ink:#1d1630; --muted:#5d5670; --line:#e8e2f0;
-  --bg:#ffffff; --soft:#f8f4fc; --card:#ffffff;
-  --ok:#0f8a5f; --warn:#b26a00; --wa:#1fa855;
-  --radius:18px; --shadow:0 10px 30px rgba(74,14,107,.10);
+  --bg:#050505; --bg-2:#0c0c0c; --card:#121212; --card-2:#171717;
+  --line:#262626; --line-2:#3a3320;
+  --ink:#f5f5f5; --muted:#a3a3a3; --dim:#737373;
+  --gold:#f0a91f; --gold-2:#ffc94d; --gold-soft:rgba(240,169,31,.12);
+  --ok:#4ade80; --bad:#f87171; --wa:#22c55e;
+  --r:16px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:"Poppins","Noto Sans Malayalam",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;font-size:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter","Noto Sans Malayalam",system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 a{color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
-section{padding:72px 0}
-h1,h2,h3{line-height:1.3;margin:0 0 .5em}
-h2{font-size:clamp(1.5rem,3.5vw,2.2rem);text-align:center}
-.sub{color:var(--muted);text-align:center;max-width:720px;margin:0 auto 40px}
-.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);background:#f1e4f8;padding:4px 12px;border-radius:99px}
-.btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;font-weight:700;text-decoration:none;border-radius:12px;padding:14px 24px;border:0;cursor:pointer;font-size:1rem;transition:transform .15s,box-shadow .15s}
-.btn:hover{transform:translateY(-2px)}
-.btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;box-shadow:0 8px 22px rgba(194,24,91,.35)}
-.btn-wa{background:var(--wa);color:#fff}
-.btn-ghost{background:#fff;color:var(--brand);border:2px solid #e3cdf0}
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+section{padding:88px 0}
+.alt{background:var(--bg-2)}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:800;text-align:center}
+.lead{color:var(--muted);text-align:center;max-width:640px;margin:14px auto 48px}
+.gold{color:var(--gold)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;color:var(--gold-2);background:var(--gold-soft);border:1px solid var(--line-2);padding:4px 10px;border-radius:8px}
+.pill svg{width:13px;height:13px}
+.center{text-align:center}
+.center .pill{margin-bottom:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .15s,filter .15s;font-family:inherit}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn-gold{background:linear-gradient(180deg,var(--gold-2),var(--gold));color:#111;box-shadow:0 8px 30px rgba(240,169,31,.25)}
+.btn-dark{background:#1a1a1a;color:var(--ink);border-color:var(--line)}
+.btn svg{width:16px;height:16px}
+.ico{width:36px;height:36px;border-radius:9px;background:var(--gold-soft);border:1px solid var(--line-2);display:grid;place-items:center;color:var(--gold)}
+.ico svg{width:18px;height:18px}
 
-/* nav */
-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo{font-weight:800;font-size:1.15rem;text-decoration:none;display:flex;align-items:center;gap:8px}
-.logo b{background:linear-gradient(135deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;font-size:1rem}
-.nav ul{display:flex;gap:24px;list-style:none;margin:0;padding:0;font-size:.92rem;font-weight:600}
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(5,5,5,.85);backdrop-filter:blur(10px);border-bottom:1px solid #161616}
+.nav{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;font-size:.92rem;text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--gold-2),var(--gold));color:#111;display:grid;place-items:center;font-weight:800}
+.nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0;font-size:.85rem}
 .nav ul a{text-decoration:none;color:var(--muted)}
-.nav ul a:hover{color:var(--brand)}
-.nav .btn{padding:10px 18px;font-size:.9rem}
+.nav ul a:hover{color:var(--ink)}
+.nav .btn{padding:8px 14px;font-size:.85rem}
 @media(max-width:860px){.nav ul{display:none}}
 
 /* hero */
-.hero{background:radial-gradient(1200px 500px at 80% -10%,#fde3ef 0,transparent 60%),radial-gradient(900px 500px at -10% 10%,#efe0fa 0,transparent 55%),#fff;padding:64px 0 72px}
-.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
-.hero h1{font-size:clamp(1.9rem,4.6vw,3.1rem);font-weight:800}
-.hero h1 span{background:linear-gradient(135deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p.lead{font-size:1.08rem;color:var(--muted);margin:0 0 24px}
-.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
-.hero-stats{display:flex;gap:20px 28px;flex-wrap:wrap}
-@media(max-width:600px){.hero-stats{gap:16px}.hero-stats div{font-size:.8rem}}
-.hero-stats div{font-size:.88rem;color:var(--muted)}
-.hero-stats strong{display:block;font-size:1.6rem;color:var(--ink)}
-.hero-card{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:24px;border:1px solid var(--line)}
-.flow{display:grid;gap:12px}
-.flow-row{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--soft)}
-.flow-row .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.3rem;flex:none}
-.flow-row small{display:block;color:var(--muted);font-size:.82rem;line-height:1.4}
-.flow-row b{font-size:.98rem}
-.price-pill{margin-left:auto;font-weight:800;font-size:1.05rem;white-space:nowrap}
-.flow-total{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,#e9fbf3,#f3fff9);border:1px dashed #9edcbf;font-weight:700}
-.flow-total span:last-child{color:var(--ok);font-size:1.2rem}
-.note{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.5}
-@media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
+.hero{padding:96px 0 104px;background:radial-gradient(700px 380px at 75% 40%,rgba(240,169,31,.10),transparent 70%)}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;margin:18px 0}
+.hero p{color:var(--muted);font-size:1.05rem;max-width:540px;margin:0 0 28px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.ticks{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:.82rem;color:var(--muted)}
+.ticks span{display:flex;align-items:center;gap:6px}
+.ticks svg{width:15px;height:15px;color:var(--gold)}
+.media{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 0 0 1px rgba(240,169,31,.08),0 30px 80px rgba(240,169,31,.12);background:#000;aspect-ratio:16/9}
+.media.flowbox{aspect-ratio:auto;padding:22px;display:grid;gap:12px;background:var(--card)}
+.frow{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;background:#0a0a0a;border:1px solid var(--line)}
+.frow b{display:block;font-size:.95rem}.frow small{color:var(--muted);font-size:.8rem}
+.frow .amt{margin-left:auto;font-weight:800;font-size:1.15rem}
+.ftotal{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:12px;border:1px dashed var(--gold);background:var(--gold-soft);font-weight:700}
+.ftotal span:last-child{color:var(--gold);font-size:1.3rem}
+.media iframe,.media img{width:100%;height:100%;border:0;object-fit:cover;object-position:top}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.hero{padding:56px 0 72px}}
 
 /* cards */
-.grid{display:grid;gap:20px}
+.grid{display:grid;gap:18px}
 .g3{grid-template-columns:repeat(3,1fr)}
-.g4{grid-template-columns:repeat(4,1fr)}
-.g2{grid-template-columns:repeat(2,1fr)}
-@media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.g3,.g4,.g2{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 2px 0 rgba(0,0,0,.02)}
-.card .emoji{font-size:1.8rem;margin-bottom:8px}
-.card h3{font-size:1.08rem}
-.card p{color:var(--muted);margin:0;font-size:.95rem}
-.soft{background:var(--soft)}
+@media(max-width:900px){.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;transition:border-color .2s}
+.card:hover{border-color:#3d3d3d}
+.card h3{font-size:1rem;margin:16px 0 6px}
+.card p{color:var(--muted);font-size:.88rem;margin:0}
 
-/* about */
-.about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
-.about>div{position:sticky;top:96px}
-.about h2{text-align:left}
-.about img{border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.quote{border-left:4px solid var(--brand);background:#fff;padding:16px 20px;border-radius:0 14px 14px 0;margin:20px 0;font-weight:600}
-@media(max-width:860px){.about{grid-template-columns:1fr}.about>div{position:static}}
-
-/* steps */
+/* workflow */
 .steps{counter-reset:s}
-.step{position:relative;padding-top:56px}
-.step::before{counter-increment:s;content:counter(s);position:absolute;top:20px;left:24px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;font-weight:800;display:grid;place-items:center;font-size:.9rem}
+.step .num{font-size:.75rem;font-weight:700;color:var(--gold)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.split img{border-radius:16px;border:1px solid var(--line)}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.checks{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:12px}
+.checks li{display:flex;gap:10px;align-items:flex-start;color:#d4d4d4}
+.checks svg{flex:none;width:18px;height:18px;color:var(--gold);margin-top:3px}
+.split h2{text-align:left}
+.split .lead{text-align:left;margin:14px 0 0}
 
-/* calculator */
-.calc{display:grid;grid-template-columns:1fr 1fr;gap:28px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}
-.calc label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.93rem;font-weight:600;margin-bottom:12px}
-.calc input{width:120px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;text-align:right}
-.calc input:focus{outline:none;border-color:var(--brand)}
-.calc-out{background:var(--soft);border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:center}
-.calc-out .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
-.calc-out .big{font-size:2.2rem;font-weight:800;margin-top:12px}
-.calc-out .pos{color:var(--ok)} .calc-out .neg{color:#c62828}
-@media(max-width:760px){.calc{grid-template-columns:1fr;padding:20px}}
+/* founder */
+.founder{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:center}
+.founder-photo{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;background:linear-gradient(160deg,#1b1b1b,#0b0b0b);box-shadow:0 0 60px rgba(240,169,31,.18)}
+.founder-photo img{width:100%;height:100%;object-fit:cover}
+.founder-photo .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:4.5rem;font-weight:800;color:var(--gold)}
+.founder-photo .cap{position:absolute;left:0;right:0;bottom:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.founder-photo .cap b{display:block}
+.founder-photo .cap small{color:var(--gold)}
+.founder h2{text-align:left;margin:14px 0 18px}
+.founder p{color:var(--muted);margin:0 0 14px}
+.mission{margin-top:22px;padding:18px 20px;border-radius:12px;background:var(--gold-soft);border:1px solid var(--line-2);color:var(--gold-2);font-style:italic;font-weight:600}
+@media(max-width:900px){.founder{grid-template-columns:1fr}.founder-photo{max-width:380px}}
+
+/* example + calculator */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.stat{text-align:center;padding:30px 20px}
+.stat strong{display:block;font-size:2.2rem;font-weight:800;color:var(--gold);margin-bottom:6px}
+.stat.hl{border-color:var(--gold);background:linear-gradient(180deg,rgba(240,169,31,.08),var(--card))}
+.stat.hl strong{color:var(--ok)}
+@media(max-width:700px){.stats{grid-template-columns:1fr}}
+.fine{font-size:.78rem;color:var(--dim);text-align:center;max-width:560px;margin:22px auto 0}
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+.calc label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.88rem;color:#d4d4d4;margin-bottom:12px}
+.calc input{width:110px;padding:9px 12px;background:#0a0a0a;border:1px solid var(--line);border-radius:8px;color:var(--ink);font:inherit;text-align:right}
+.calc input:focus{outline:none;border-color:var(--gold)}
+.calc-out{display:flex;flex-direction:column;justify-content:center}
+.calc-out .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.9rem;color:var(--muted)}
+.calc-out .row b{color:var(--ink)}
+.calc-out .big{font-size:2.4rem;font-weight:800;margin-top:10px}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+@media(max-width:760px){.calc{grid-template-columns:1fr}}
 
 /* curriculum */
-.mods{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.mods{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:760px){.mods{grid-template-columns:1fr}}
-details.mod{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-details.mod summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;gap:14px;font-weight:700}
-details.mod summary::-webkit-details-marker{display:none}
-details.mod summary .num{flex:none;font-size:.75rem;font-weight:800;color:var(--brand);background:#f1e4f8;border-radius:8px;padding:4px 8px}
-details.mod summary::after{content:"+";margin-left:auto;font-size:1.3rem;color:var(--brand);transition:transform .2s}
-details.mod[open] summary::after{transform:rotate(45deg)}
-details.mod ul{margin:0;padding:0 18px 16px 44px;color:var(--muted);font-size:.93rem}
-.show-more{text-align:center;margin-top:24px}
+details.mod,.faq details{background:var(--card);border:1px solid var(--line);border-radius:12px}
+details summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:.95rem}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"";margin-left:auto;flex:none;width:9px;height:9px;border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);transform:rotate(45deg);transition:transform .2s}
+details[open] summary::after{transform:rotate(-135deg)}
+details[open]{border-color:#3d3d3d}
+.mod .n{font-size:.72rem;font-weight:700;color:var(--gold);background:var(--gold-soft);border:1px solid var(--line-2);border-radius:6px;padding:2px 7px}
+details.mod ul{margin:0;padding:0 18px 16px 52px;color:var(--muted);font-size:.88rem}
+.more{text-align:center;margin-top:24px}
 
-/* project */
+/* project chain */
 .chain{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:900px;margin:0 auto}
-.chain span{background:#fff;border:1px solid var(--line);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.92rem}
-.chain span::before{content:"✓ ";color:var(--ok)}
+.chain span{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);padding:9px 14px;border-radius:99px;font-size:.86rem}
+.chain svg{width:14px;height:14px;color:var(--gold)}
 
-/* pricing */
-.pricing{max-width:520px;margin:0 auto;background:#fff;border-radius:28px;padding:36px 28px;box-shadow:0 20px 50px rgba(123,31,162,.18);border:2px solid #e9d3f5;text-align:center;position:relative}
-.pricing .ribbon{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;font-size:.8rem;font-weight:700;padding:6px 16px;border-radius:99px;white-space:nowrap}
-.pricing .mrp{color:var(--muted);text-decoration:line-through;font-size:1.1rem}
-.pricing .amt{font-size:3.2rem;font-weight:800;line-height:1.1;margin:4px 0 4px}
-.pricing ul{text-align:left;list-style:none;padding:0;margin:24px 0}
-.pricing li{padding:8px 0 8px 30px;position:relative;border-bottom:1px solid var(--line);font-size:.95rem}
-.pricing li::before{content:"✓";position:absolute;left:4px;color:var(--ok);font-weight:800}
-.pricing .btn{width:100%;margin-top:8px}
+/* testimonials */
+.tcard p{color:#e5e5e5;font-size:.95rem;margin:0 0 18px}
+.who{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.9rem}
+.av{width:34px;height:34px;border-radius:50%;background:var(--gold-soft);border:1px solid var(--line-2);color:var(--gold);display:grid;place-items:center;font-weight:700}
+.stars{color:var(--gold);letter-spacing:2px;font-size:.85rem;margin-bottom:10px}
 
 /* faq */
-.faq{max-width:820px;margin:0 auto}
-.faq details{border-bottom:1px solid var(--line);padding:16px 0}
-.faq summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:16px}
-.faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";color:var(--brand);font-size:1.3rem}
-.faq details[open] summary::after{content:"−"}
-.faq p{color:var(--muted);margin:10px 0 0}
+.faq{max-width:800px;margin:0 auto;display:grid;gap:10px}
+.faq p{margin:0;padding:0 18px 18px;color:var(--muted);font-size:.92rem}
 
-/* final cta + footer */
-.final{background:linear-gradient(135deg,var(--brand-dark),var(--brand) 55%,var(--brand-2));color:#fff;text-align:center;border-radius:28px;padding:56px 24px}
-.final h2{color:#fff}
-.final p{opacity:.9;max-width:620px;margin:0 auto 24px}
-footer{padding:40px 0 100px;color:var(--muted);font-size:.85rem;text-align:center}
-.disclaimer{max-width:820px;margin:0 auto 16px;background:var(--soft);border-radius:14px;padding:16px 20px;text-align:left;line-height:1.6}
+/* cta */
+.cta{max-width:760px;margin:0 auto;text-align:center;border:1px solid var(--line-2);border-radius:22px;padding:52px 24px;background:radial-gradient(500px 220px at 50% 0,rgba(240,169,31,.16),transparent 70%),var(--card)}
+.cta h2{margin-bottom:12px}
+.cta p{color:var(--muted);max-width:520px;margin:0 auto 26px}
+.price-line{display:flex;align-items:baseline;justify-content:center;gap:12px;margin-bottom:22px}
+.price-line s{color:var(--dim);font-size:1.2rem}
+.price-line b{font-size:3rem;font-weight:800;color:var(--gold)}
+.incl{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:22px;font-size:.82rem;color:var(--muted)}
+.incl span{display:flex;align-items:center;gap:6px}
+.incl svg{width:14px;height:14px;color:var(--gold)}
 
-/* floating whatsapp */
-.wa-float{position:fixed;right:16px;bottom:16px;z-index:60;width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 10px 24px rgba(31,168,85,.45);text-decoration:none}
-.wa-float svg{width:30px;height:30px;fill:#fff}
-.mobile-bar{display:none}
+/* footer */
+footer{border-top:1px solid #161616;padding:48px 0 110px;text-align:center;color:var(--dim);font-size:.82rem}
+footer .brand{justify-content:center;margin-bottom:20px}
+.social{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.social a{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);text-decoration:none;color:#d4d4d4;font-size:.85rem}
+.social svg{width:15px;height:15px}
+.legal{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.legal a{text-decoration:none;color:var(--muted)}
+.disc{max-width:640px;margin:0 auto 12px;line-height:1.6}
+
+/* floating */
+.wa-float{position:fixed;right:16px;bottom:16px;z-index:60;width:54px;height:54px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 10px 30px rgba(34,197,94,.35)}
+.wa-float svg{width:28px;height:28px;fill:#fff}
+.mbar{display:none}
 @media(max-width:600px){
-  section{padding:56px 0}
-  .mobile-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:#fff;border-top:1px solid var(--line);padding:10px 16px;gap:10px;align-items:center;justify-content:space-between}
-  .mobile-bar .p{font-weight:800;font-size:1.15rem}
-  .mobile-bar .p s{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:6px}
-  .mobile-bar .btn{padding:12px 18px}
-  .wa-float{bottom:84px}
+  section{padding:64px 0}
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(10,10,10,.95);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px;align-items:center;justify-content:space-between}
+  .mbar b{font-size:1.2rem;color:var(--gold)} .mbar s{color:var(--dim);font-size:.85rem;margin-left:6px}
+  .mbar .btn{padding:11px 18px}
+  .wa-float{bottom:80px}
 }
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#top"><span class="logo-mark">₹</span><span data-brand>Reseller <b>Academy</b></span></a>
+    <a class="brand" href="#top"><span class="brand-mark">₹</span><span data-brand></span></a>
     <ul>
-      <li><a href="#about">Reselling?</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#curriculum">Curriculum</a></li>
-      <li><a href="#calculator">Profit Calculator</a></li>
+      <li><a href="#program">Program</a></li>
+      <li><a href="#curriculum">Modules</a></li>
+      <li data-if="founder"><a href="#founder">Founder</a></li>
+      <li data-if="testimonials"><a href="#feedback">Feedback</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
-    <a class="btn btn-primary" href="#pricing">Join Now</a>
+    <a class="btn btn-gold" href="#join"><span>Join <span data-price></span></span></a>
   </div>
 </header>
 
@@ -187,107 +213,88 @@ footer{padding:40px 0 100px;color:var(--muted);font-size:.85rem;text-align:cente
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="tag">Malayalam Course • Beginner Friendly</span>
-      <h1>Stock ഇല്ലാതെ സ്വന്തം <span>Online Reselling Business</span> തുടങ്ങാം</h1>
-      <p class="lead">Product തിരഞ്ഞെടുക്കുന്നത് മുതൽ Brand, Instagram, WhatsApp marketing, Order handling, Profit calculation വരെ — Meesho Reselling-ന്റെ എല്ലാ കാര്യങ്ങളും <b>A to Z</b>, ലളിതമായ മലയാളത്തിൽ.</p>
+      <span class="pill"><i data-i="phone"></i>Smartphone മാത്രം മതി — Stock വേണ്ട</span>
+      <h1>Stock ഇല്ലാതെ സ്വന്തം <span class="gold">Online Reselling Business</span> തുടങ്ങാം</h1>
+      <p>Meesho-യിലെ products കണ്ടെത്തി, നിങ്ങളുടെ Instagram / WhatsApp വഴി market ചെയ്ത്, margin നേടുന്ന രീതി — product selection മുതൽ profit calculation വരെ A to Z, ലളിതമായ മലയാളത്തിൽ.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary" href="#pricing">Course-ൽ ചേരാം →</a>
-        <a class="btn btn-ghost" href="#curriculum">28 Modules കാണാം</a>
+        <a class="btn btn-gold" href="#join"><span>Join for <span data-price></span></span> <i data-i="arrow"></i></a>
+        <a class="btn btn-dark" href="#program">Explore Program</a>
       </div>
-      <div class="hero-stats">
-        <div><strong>28</strong>Modules</div>
-        <div><strong>18</strong>Step Final Project</div>
-        <div><strong>0</strong>മുൻപരിചയം വേണ്ട</div>
+      <div class="ticks">
+        <span><i data-i="check"></i>Beginner friendly</span>
+        <span><i data-i="check"></i>Malayalam classes</span>
+        <span><i data-i="check"></i>WhatsApp support</span>
       </div>
     </div>
-    <div class="hero-card" aria-label="Reselling example">
-      <div class="flow">
-        <div class="flow-row"><div class="ic" style="background:#e3f6ee">🏭</div><div><b>Supplier Price</b><small>Meesho-യിൽ product കണ്ടെത്തുന്നു</small></div><div class="price-pill">₹300</div></div>
-        <div class="flow-row"><div class="ic" style="background:#f3e5fa">📱</div><div><b>Your Selling Price</b><small>Instagram / WhatsApp / Website വഴി market ചെയ്യുന്നു</small></div><div class="price-pill">₹499</div></div>
-        <div class="flow-row"><div class="ic" style="background:#e5effb">🚚</div><div><b>Supplier Ships</b><small>Product നേരിട്ട് customer-ലേക്ക്</small></div><div class="price-pill">✓</div></div>
-        <div class="flow-total"><span>Gross Margin</span><span>₹199</span></div>
-      </div>
-      <p class="note">* ഇത് ഒരു ഉദാഹരണം മാത്രം. Shipping, payment charges, ads, returns തുടങ്ങിയ ചെലവുകൾ കുറച്ചശേഷമാണ് യഥാർത്ഥ profit. ഇത് കണക്കാക്കാൻ course-ൽ പഠിക്കാം.</p>
-    </div>
+    <div class="media" id="heroMedia"></div>
   </div>
 </section>
 
-<!-- WHAT IS RESELLING -->
-<section id="about">
-  <div class="wrap about">
-    <div>
-      <span class="tag">Reselling എന്താണ്?</span>
-      <h2>മറ്റൊരാളുടെ product, നിങ്ങളുടെ marketing, നിങ്ങളുടെ margin</h2>
-      <p>മറ്റൊരു platform-ൽ ലഭ്യമായ product സ്വന്തം Instagram page അല്ലെങ്കിൽ website ഉപയോഗിച്ച് market ചെയ്ത്, customer-ലേക്ക് product എത്തിച്ച് margin നേടുന്ന രീതിയാണ് reselling.</p>
-      <div class="quote">You sell • Supplier ships • Customer receives</div>
-      <p>Instagram Reels, Posts, WhatsApp Status തുടങ്ങിയ online platforms വഴി products പരിചയപ്പെടുത്തി customers-നെ ആകർഷിച്ച് sales നേടാം. വലിയ stock മുൻകൂട്ടി വാങ്ങി സൂക്ഷിക്കേണ്ടതില്ല.</p>
-    </div>
-    <img src="assets/workflow.jpg" alt="Reselling / Dropshipping workflow: Supplier lists on Meesho, you list at your price, customer orders, you forward the order, supplier ships, customer receives" loading="lazy" width="1312" height="1200">
+<!-- WHAT YOU WILL LEARN -->
+<section id="program" class="alt">
+  <div class="wrap">
+    <div class="center"><span class="pill">What You Will Learn</span></div>
+    <h2>Reselling business തുടങ്ങാൻ വേണ്ടതെല്ലാം</h2>
+    <p class="lead">Product കണ്ടെത്തുന്നത് മുതൽ order deliver ചെയ്ത് profit കണക്കാക്കുന്നത് വരെ — practical steps ആയി.</p>
+    <div class="grid g3" id="learn"></div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section id="how" class="soft">
-  <div class="wrap">
-    <h2>Reselling Workflow — 6 Simple Steps</h2>
-    <p class="sub">ഒരേ product, മൂന്ന് പേർ, ഒരു simple system. Course-ൽ ഓരോ step-ഉം practical ആയി ചെയ്ത് പഠിക്കാം.</p>
-    <div class="grid g3 steps">
-      <div class="card step"><h3>Supplier Lists on Meesho</h3><p>Supplier product Meesho-യിൽ ഒരു price-ന് list ചെയ്യുന്നു (ഉദാ: ₹100).</p></div>
-      <div class="card step"><h3>You List at Your Price</h3><p>അതേ product നിങ്ങളുടെ Instagram page / website-ൽ നിങ്ങളുടെ price-ൽ post ചെയ്യുന്നു (ഉദാ: ₹200).</p></div>
-      <div class="card step"><h3>Customer Places Order</h3><p>Customer നിങ്ങളുടെ post കണ്ട് ഇഷ്ടപ്പെട്ട് നിങ്ങളോട് order നൽകുന്നു.</p></div>
-      <div class="card step"><h3>You Forward the Order</h3><p>Customer-ന്റെ details ഉപയോഗിച്ച് നിങ്ങൾ Meesho വഴി product order ചെയ്യുന്നു.</p></div>
-      <div class="card step"><h3>Supplier Ships Directly</h3><p>Supplier product pack ചെയ്ത് നേരിട്ട് customer-ന്റെ address-ലേക്ക് അയക്കുന്നു.</p></div>
-      <div class="card step"><h3>Customer Receives</h3><p>Customer-ന് product ലഭിക്കുന്നു. Happy customer = repeat orders.</p></div>
+<section>
+  <div class="wrap split">
+    <div>
+      <span class="pill"><i data-i="flow"></i>How Reselling Works</span>
+      <h2 style="margin-top:14px">You sell. Supplier ships. <span class="gold">Customer receives.</span></h2>
+      <p class="lead">മറ്റൊരു platform-ൽ ലഭ്യമായ product, സ്വന്തം Instagram page / website വഴി market ചെയ്ത് customer-ലേക്ക് എത്തിച്ച് margin നേടുന്ന രീതിയാണ് reselling.</p>
+      <ul class="checks">
+        <li><i data-i="check"></i>Supplier Meesho-യിൽ product list ചെയ്യുന്നു</li>
+        <li><i data-i="check"></i>നിങ്ങൾ അതേ product നിങ്ങളുടെ price-ൽ post ചെയ്യുന്നു</li>
+        <li><i data-i="check"></i>Customer നിങ്ങളോട് order ചെയ്ത് payment നൽകുന്നു</li>
+        <li><i data-i="check"></i>Customer details ഉപയോഗിച്ച് നിങ്ങൾ order forward ചെയ്യുന്നു</li>
+        <li><i data-i="check"></i>Supplier നേരിട്ട് customer-ലേക്ക് ship ചെയ്യുന്നു</li>
+        <li><i data-i="check"></i>Happy customer — നിങ്ങൾക്ക് margin</li>
+      </ul>
     </div>
+    <img src="assets/workflow.jpg" alt="Reselling workflow: supplier lists on Meesho, you list at your price, customer orders, you forward the order, supplier ships, customer receives" loading="lazy" width="1312" height="1200">
   </div>
 </section>
 
 <!-- WHY MEESHO -->
-<section>
+<section class="alt">
   <div class="wrap">
+    <div class="center"><span class="pill">Why Meesho</span></div>
     <h2>Reselling-ന് Meesho എങ്ങനെ സഹായിക്കുന്നു?</h2>
-    <p class="sub">Sourcing-ഉം delivery-യും platform side-ൽ. നിങ്ങളുടെ ശ്രദ്ധ Product Selection, Pricing, Marketing, Customer Handling എന്നിവയിൽ.</p>
-    <div class="grid g4">
-      <div class="card"><div class="emoji">📦</div><h3>No Inventory</h3><p>വലിയ stock മുൻകൂട്ടി വാങ്ങി സൂക്ഷിക്കേണ്ടതില്ല.</p></div>
-      <div class="card"><div class="emoji">🔍</div><h3>Product Research</h3><p>Price, images, ratings, reviews, details, return policy — എല്ലാം പരിശോധിക്കാം.</p></div>
-      <div class="card"><div class="emoji">💵</div><h3>Cash on Delivery</h3><p>ചില products/locations-ൽ COD option. ഓരോ order-നും ലഭ്യത പരിശോധിക്കണം.</p></div>
-      <div class="card"><div class="emoji">🚚</div><h3>Delivery Handled</h3><p>Platform delivery സംവിധാനം വഴി product customer-ലേക്ക് എത്തുന്നു.</p></div>
+    <p class="lead">Sourcing-ഉം delivery-യും platform side-ൽ. നിങ്ങളുടെ ശ്രദ്ധ Product Selection, Pricing, Marketing, Customer Handling എന്നിവയിൽ.</p>
+    <div class="grid g3" id="why"></div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section id="founder" data-if="founder">
+  <div class="wrap founder">
+    <div class="founder-photo" id="founderPhoto"></div>
+    <div>
+      <span class="pill"><i data-i="user"></i>Meet Your Mentor</span>
+      <h2>Hi, I'm <span class="gold" data-founder-name></span></h2>
+      <div id="founderBio"></div>
+      <div class="mission" id="founderMission"></div>
     </div>
   </div>
 </section>
 
-<!-- WHAT YOU'LL BUILD -->
-<section class="soft">
+<!-- PROFIT -->
+<section id="calculator" class="alt">
   <div class="wrap">
-    <h2>ഈ Course-ൽ നിങ്ങൾ പഠിക്കുന്നത്</h2>
-    <p class="sub">പഠിക്കുക മാത്രമല്ല — course കഴിയുമ്പോൾ നിങ്ങൾക്ക് സ്വന്തമായി ഒരു working reselling setup ഉണ്ടാകും.</p>
-    <div class="grid g3">
-      <div class="card"><div class="emoji">🎯</div><h3>Niche & Winning Products</h3><p>Demand, competition, ratings, reviews, content potential നോക്കി ശരിയായ product കണ്ടെത്താം.</p></div>
-      <div class="card"><div class="emoji">🎨</div><h3>Brand, Logo & Identity</h3><p>Short, memorable brand name, simple logo, consistent brand colours & style.</p></div>
-      <div class="card"><div class="emoji">📸</div><h3>Photos, Reels & Posters</h3><p>Smartphone-ൽ product photography, Hook → CTA reel structure, voice-over, poster design.</p></div>
-      <div class="card"><div class="emoji">📲</div><h3>Instagram & WhatsApp Business</h3><p>Professional profile, bio, highlights, catalogue, labels, quick replies.</p></div>
-      <div class="card"><div class="emoji">💬</div><h3>Sales & Customer Handling</h3><p>“Price?” enquiries, follow-ups, trust building, returns & complaints — professional ആയി.</p></div>
-      <div class="card"><div class="emoji">📈</div><h3>Meta Ads, Profit & Scaling</h3><p>CTR, CPC, creative testing, real profit calculation, data നോക്കി gradual scaling.</p></div>
+    <div class="center"><span class="pill"><i data-i="calc"></i>Profit Reality</span></div>
+    <h2>ഒരു ഉദാഹരണം — <span class="gold">₹300 → ₹499</span></h2>
+    <p class="lead">Product കണ്ട ഉടനെ “ഇത്ര രൂപ profit” എന്ന് തീരുമാനിക്കരുത്. എല്ലാ ചെലവുകളും കണക്കാക്കിയ ശേഷം മാത്രം selling price തീരുമാനിക്കുക.</p>
+    <div class="stats">
+      <div class="card stat"><strong>₹300</strong>Meesho-യിലെ product cost</div>
+      <div class="card stat"><strong>₹499</strong>നിങ്ങളുടെ Instagram price</div>
+      <div class="card stat hl"><strong id="exProfit">₹104</strong>Costs കുറച്ച ശേഷമുള്ള profit (താഴെ calculator)</div>
     </div>
-  </div>
-</section>
-
-<!-- CURRICULUM -->
-<section id="curriculum">
-  <div class="wrap">
-    <h2>Complete Curriculum — 28 Modules</h2>
-    <p class="sub">ഓരോ module-ഉം tap ചെയ്ത് എന്താണ് പഠിക്കുന്നത് എന്ന് കാണാം.</p>
-    <div class="mods" id="mods"></div>
-    <div class="show-more"><button class="btn btn-ghost" id="toggleMods" type="button">എല്ലാ 28 Modules-ഉം കാണിക്കുക</button></div>
-  </div>
-</section>
-
-<!-- PROFIT CALCULATOR -->
-<section id="calculator" class="soft">
-  <div class="wrap">
-    <h2>Real Profit Calculator</h2>
-    <p class="sub">ഒരു product കണ്ട ഉടനെ “ഇത്ര രൂപ profit കിട്ടും” എന്ന് തീരുമാനിക്കരുത്. എല്ലാ ചെലവുകളും കണക്കാക്കിയ ശേഷം മാത്രം Selling Price തീരുമാനിക്കുക.</p>
-    <div class="calc">
+    <div class="card calc">
       <div>
         <label>Selling Price (₹) <input type="number" min="0" id="c-sell" value="499"></label>
         <label>Product Cost (₹) <input type="number" min="0" id="c-cost" value="300"></label>
@@ -297,89 +304,88 @@ footer{padding:40px 0 100px;color:var(--muted);font-size:.85rem;text-align:cente
         <label>Return Loss Allowance (₹) <input type="number" min="0" id="c-ret" value="25"></label>
       </div>
       <div class="calc-out" aria-live="polite">
-        <div class="row"><span>Revenue</span><b id="o-rev">₹499</b></div>
-        <div class="row"><span>Total Costs</span><b id="o-cost">₹395</b></div>
-        <div class="row"><span>Margin</span><b id="o-margin">21%</b></div>
-        <div>Net Profit per Order</div>
-        <div class="big pos" id="o-profit">₹104</div>
-        <p class="note">Profit = Selling Price − Total Costs. Values നിങ്ങളുടെ product അനുസരിച്ച് മാറ്റി നോക്കൂ.</p>
+        <div class="row"><span>Revenue</span><b id="o-rev"></b></div>
+        <div class="row"><span>Total Costs</span><b id="o-cost"></b></div>
+        <div class="row"><span>Margin</span><b id="o-margin"></b></div>
+        <div style="margin-top:14px;color:var(--muted)">Net Profit per Order</div>
+        <div class="big" id="o-profit"></div>
       </div>
     </div>
+    <p class="fine">ഉദാഹരണങ്ങൾ മാത്രം. Results നിങ്ങളുടെ effort, product, market എന്നിവ അനുസരിച്ചിരിക്കും — income guarantee ഇല്ല.</p>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section id="curriculum">
+  <div class="wrap">
+    <div class="center"><span class="pill"><i data-i="book"></i>Full Curriculum</span></div>
+    <h2>28 Modules — A to Z</h2>
+    <p class="lead">ഓരോ module-ഉം tap ചെയ്ത് എന്താണ് പഠിക്കുന്നത് എന്ന് കാണാം.</p>
+    <div class="mods" id="mods"></div>
+    <div class="more"><button class="btn btn-dark" id="toggleMods" type="button">എല്ലാ 28 Modules-ഉം കാണിക്കുക</button></div>
   </div>
 </section>
 
 <!-- FINAL PROJECT -->
-<section>
+<section class="alt">
   <div class="wrap">
-    <h2>🎓 Final Project — പഠിച്ചത് ചെയ്ത് കാണിക്കാം</h2>
-    <p class="sub">Course complete ചെയ്യാൻ നിങ്ങൾ സ്വന്തമായി ഒരു reselling setup build ചെയ്ത് submit ചെയ്യും — “പഠിച്ചു” എന്നതിൽ നിന്ന് “ചെയ്തു” എന്നതിലേക്ക്.</p>
-    <div class="chain">
-      <span>Brand Name + Logo</span><span>Instagram Profile</span><span>WhatsApp Business</span><span>1 Selected Product</span><span>5 Product Photos</span><span>2 Posters</span><span>2 Reels</span><span>1 Voice-over Video</span><span>Product Description</span><span>WhatsApp Catalogue</span><span>Customer Chat Simulation</span><span>Profit Calculation</span>
-    </div>
+    <div class="center"><span class="pill"><i data-i="award"></i>Final Project</span></div>
+    <h2>പഠിച്ചത് <span class="gold">ചെയ്ത് കാണിക്കാം</span></h2>
+    <p class="lead">Course കഴിയുമ്പോൾ നിങ്ങൾ സ്വന്തമായി ഒരു working reselling setup build ചെയ്ത് submit ചെയ്യും.</p>
+    <div class="chain" id="chain"></div>
   </div>
 </section>
 
-<!-- WHO -->
-<section class="soft">
+<!-- TESTIMONIALS -->
+<section id="feedback" data-if="testimonials">
   <div class="wrap">
-    <h2>ഈ Course ആർക്കാണ്?</h2>
-    <p class="sub">മുൻപരിചയം ആവശ്യമില്ല. അടിസ്ഥാന കാര്യങ്ങളിൽ നിന്ന് തുടങ്ങാം.</p>
-    <div class="grid g4">
-      <div class="card"><div class="emoji">🎒</div><h3>Students</h3><p>പഠനത്തോടൊപ്പം ഒരു online business skill.</p></div>
-      <div class="card"><div class="emoji">💼</div><h3>Working Professionals</h3><p>Job-നൊപ്പം ഒരു side business.</p></div>
-      <div class="card"><div class="emoji">🏠</div><h3>Homemakers</h3><p>വീട്ടിലിരുന്ന് ഒരു online business.</p></div>
-      <div class="card"><div class="emoji">🚀</div><h3>Beginners</h3><p>എവിടെ തുടങ്ങണം എന്ന് അറിയാത്തവർക്ക്.</p></div>
-    </div>
+    <div class="center"><span class="pill"><i data-i="star"></i>Student Feedback</span></div>
+    <h2>Students പറയുന്നത്</h2>
+    <p class="lead">Course-ൽ ചേർന്ന് reselling journey തുടങ്ങിയവരുടെ അഭിപ്രായങ്ങൾ.</p>
+    <div class="grid g3" id="tgrid"></div>
   </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing">
+<!-- REQUIREMENTS -->
+<section class="alt">
   <div class="wrap">
-    <h2>Course-ൽ ചേരാം</h2>
-    <p class="sub">One-time payment. Lifetime access.</p>
-    <div class="pricing">
-      <div class="ribbon">🔥 Launch Offer</div>
-      <div class="mrp" data-mrp>₹2,999</div>
-      <div class="amt" data-price>₹999</div>
-      <div style="color:var(--muted)">one-time • lifetime access</div>
-      <ul>
-        <li>28 Modules — Malayalam video lessons</li>
-        <li>Module-wise Q&amp;A notes (PDF)</li>
-        <li>Profit calculation sheet</li>
-        <li>Caption, hook &amp; WhatsApp reply templates</li>
-        <li>18-step Final Practical Project</li>
-        <li>Final Exam + Course Completion Certificate</li>
-        <li>WhatsApp support for doubts</li>
-      </ul>
-      <a class="btn btn-primary" data-buy href="#">ഇപ്പോൾ Enroll ചെയ്യാം →</a>
-      <a class="btn btn-wa" data-wa href="#" style="margin-top:10px">💬 WhatsApp-ൽ ചോദിക്കാം</a>
+    <div class="center"><span class="pill">What You Need</span></div>
+    <h2>തുടങ്ങാൻ വേണ്ടത് ഇത്ര മാത്രം</h2>
+    <p class="lead">വിലകൂടിയ tools-ഓ മുൻപരിചയമോ വേണ്ട. ഒരു phone-ഉം പഠിക്കാനുള്ള മനസ്സും മതി.</p>
+    <div class="grid g3">
+      <div class="card"><div class="ico"><i data-i="phone"></i></div><h3>ഒരു Smartphone</h3><p>Photos, reels, Instagram, WhatsApp Business — എല്ലാം phone-ൽ ചെയ്യാം.</p></div>
+      <div class="card"><div class="ico"><i data-i="clock"></i></div><h3>ദിവസം 1–2 മണിക്കൂർ</h3><p>പഠിക്കാനും പഠിച്ചത് consistent ആയി practice ചെയ്യാനും.</p></div>
+      <div class="card"><div class="ico"><i data-i="rupee"></i></div><h3><span data-price></span> മാത്രം</h3><p>Full program, templates, final project review, support — one-time payment.</p></div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section id="faq" class="soft">
+<section id="faq">
   <div class="wrap">
+    <div class="center"><span class="pill">FAQ</span></div>
     <h2>സാധാരണ ചോദ്യങ്ങൾ</h2>
-    <div class="faq">
-      <details><summary>Reselling തുടങ്ങാൻ എത്ര investment വേണം?</summary><p>വലിയ stock വാങ്ങേണ്ടതില്ല. ഒരു smartphone, internet, product sample (optional, content-ന് useful), ആവശ്യമെങ്കിൽ ad budget — ഇത്ര മതി തുടങ്ങാൻ.</p></details>
-      <details><summary>Reselling easy money ആണോ? Income guarantee ഉണ്ടോ?</summary><p>അല്ല. Product research, content creation, marketing, customer handling, testing എന്നിവ ആവശ്യമായ ഒരു business ആണ്. Product quality, returns, ad cost പോലുള്ള risks ഉണ്ട്. Income നിങ്ങളുടെ effort-ഉം consistency-യും അനുസരിച്ചിരിക്കും — ഞങ്ങൾ income guarantee ചെയ്യുന്നില്ല.</p></details>
-      <details><summary>എനിക്ക് മുൻപരിചയം ഇല്ല. പഠിക്കാൻ പറ്റുമോ?</summary><p>തീർച്ചയായും. Absolute beginners-നെ ഉദ്ദേശിച്ചാണ് course design ചെയ്തിരിക്കുന്നത്. ഓരോ step-ഉം ലളിതമായ മലയാളത്തിൽ.</p></details>
-      <details><summary>Cash on Delivery orders എടുക്കാമോ?</summary><p>ചില products-നും locations-നും COD ലഭ്യമാണ്, എന്നാൽ എല്ലായിടത്തും ഒരുപോലെയല്ല. ഓരോ order-നും ലഭ്യമായ payment options പരിശോധിക്കേണ്ടത് എങ്ങനെ എന്ന് course-ൽ പഠിക്കാം.</p></details>
-      <details><summary>Instagram followers ഇല്ലാതെ sales കിട്ടുമോ?</summary><p>Organic marketing (Reels, WhatsApp Status), paid marketing (Meta Ads), content → sale system എന്നിവ ഉപയോഗിച്ച് zero-ൽ നിന്ന് audience build ചെയ്യുന്നത് course-ൽ പഠിപ്പിക്കുന്നു.</p></details>
-      <details><summary>Course എത്ര കാലം access ചെയ്യാം?</summary><p>One-time payment-ൽ lifetime access. നിങ്ങളുടെ സൗകര്യം അനുസരിച്ച് പഠിക്കാം.</p></details>
-    </div>
+    <p class="lead">Join ചെയ്യുന്നതിന് മുമ്പ് അറിയേണ്ടതെല്ലാം.</p>
+    <div class="faq" id="faqList"></div>
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section>
+<!-- JOIN -->
+<section id="join" class="alt">
   <div class="wrap">
-    <div class="final">
-      <h2>Welcome to your Reselling Business Journey!</h2>
-      <p>ഓരോ module-ഉം ശ്രദ്ധയോടെ പഠിക്കുക, notes തയ്യാറാക്കുക, പഠിക്കുന്നത് പ്രായോഗികമായി പരീക്ഷിക്കുക. Let's get started.</p>
-      <a class="btn" style="background:#fff;color:var(--brand)" href="#pricing">Course-ൽ ചേരാം →</a>
+    <div class="cta">
+      <span class="pill"><i data-i="fire"></i>Launch Offer</span>
+      <h2 style="margin-top:16px">ഇന്ന് തന്നെ നിങ്ങളുടെ <span class="gold">Reselling Journey</span> തുടങ്ങാം</h2>
+      <p>28 modules, practical final project, templates, WhatsApp support — എല്ലാം ഒരൊറ്റ payment-ൽ.</p>
+      <div class="price-line"><s data-mrp></s><b data-price></b></div>
+      <a class="btn btn-gold" data-buy href="#" style="min-width:260px"><span>Enroll Now for <span data-price></span></span> <i data-i="arrow"></i></a>
+      <div style="margin-top:12px"><a class="btn btn-dark" data-wa href="#">WhatsApp-ൽ ചോദിക്കാം</a></div>
+      <div class="incl">
+        <span><i data-i="check"></i>One-time payment</span>
+        <span><i data-i="check"></i>Lifetime access</span>
+        <span><i data-i="check"></i>Malayalam</span>
+        <span><i data-i="check"></i>Certificate</span>
+      </div>
     </div>
   </div>
 </section>
@@ -388,104 +394,207 @@ footer{padding:40px 0 100px;color:var(--muted);font-size:.85rem;text-align:cente
 
 <footer>
   <div class="wrap">
-    <div class="disclaimer"><b>Disclaimer:</b> ഇത് ഒരു independent educational course ആണ്. Meesho-യുമായോ Meta, Instagram, WhatsApp എന്നിവയുമായോ ഈ course-ന് ഔദ്യോഗിക ബന്ധമില്ല; ആ names അവരുടെ ഉടമസ്ഥരുടെ trademarks ആണ്. Platform policies, COD ലഭ്യത, charges എന്നിവ മാറാം — ഓരോ order-ന് മുമ്പും പരിശോധിക്കുക. Earnings ഉദാഹരണങ്ങൾ മാത്രം; income guarantee ഇല്ല.</div>
-    <p>© <span id="yr"></span> <span data-brand-text>Reseller Academy</span> • Malayalam Reselling Course</p>
+    <a class="brand" href="#top"><span class="brand-mark">₹</span><span data-brand></span></a>
+    <div class="social" id="social"></div>
+    <div class="legal" id="legal"></div>
+    <p class="disc">ഇത് ഒരു independent educational course ആണ്. Meesho, Meta, Instagram, WhatsApp എന്നിവയുമായി ഔദ്യോഗിക ബന്ധമില്ല; ആ names അവരുടെ ഉടമസ്ഥരുടെ trademarks ആണ്. Platform policies, COD ലഭ്യത, charges എന്നിവ മാറാം. Results individual effort-നെ ആശ്രയിച്ചിരിക്കും; income guarantee ഇല്ല.</p>
+    <p>© <span id="yr"></span> <span data-brand></span>. All rights reserved.</p>
   </div>
 </footer>
 
-<div class="mobile-bar">
-  <div class="p"><span data-price>₹999</span><s data-mrp>₹2,999</s></div>
-  <a class="btn btn-primary" href="#pricing">Join Now</a>
-</div>
-
-<a class="wa-float" data-wa href="#" aria-label="Chat on WhatsApp">
-  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.8-3.8-1.8-5.9C5 9.9 9.9 5.1 16 5.1S27 9.9 27 15.8 22.1 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.2 1.4 3.4c.2.2 2.4 3.6 5.8 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg>
-</a>
+<div class="mbar"><div><b data-price></b><s data-mrp></s></div><a class="btn btn-gold" href="#join">Join Now</a></div>
+<a class="wa-float" data-wa href="#" aria-label="Chat on WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.8-3.8-1.8-5.9C5 9.9 9.9 5.1 16 5.1S27 9.9 27 15.8 22.1 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.2 1.4 3.4c.2.2 2.4 3.6 5.8 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg></a>
 
 <script>
-/* ===== EDIT THESE BEFORE GOING LIVE ===== */
+/* ================= EDIT THESE BEFORE GOING LIVE ================= */
 const CONFIG = {
-  brand: "Reseller Academy",           // നിങ്ങളുടെ brand name
-  price: 999,                           // course price (₹)
-  mrp: 2999,                            // strike-through price (₹)
-  whatsapp: "919999999999",             // country code + number, no "+" or spaces
-  paymentLink: ""                       // Razorpay / Instamojo / Cashfree payment page URL (empty = WhatsApp)
+  brand: "Reseller Academy",
+  price: 999,
+  mrp: 2999,
+  whatsapp: "919999999999",          // country code + number, no "+"
+  paymentLink: "",                   // Razorpay / Instamojo / Cashfree link. Empty = enroll via WhatsApp
+  youtubeId: "",                     // intro video ID (youtube.com/watch?v=THIS). Empty = ₹300→₹499 card
+  founder: {                         // set to null to hide the mentor section
+    name: "Your Name",
+    role: "Founder & Mentor",
+    photo: "",                       // e.g. "assets/founder.jpg"
+    bio: [
+      "ഇവിടെ നിങ്ങളെ കുറിച്ച് എഴുതുക — reselling / online business-ൽ നിങ്ങളുടെ അനുഭവം.",
+      "നിങ്ങൾ എന്തുകൊണ്ട് ഈ course തുടങ്ങി, students-ന് എന്ത് നേടാൻ സഹായിക്കുന്നു എന്നിവ."
+    ],
+    mission: "“എന്റെ ലക്ഷ്യം: വീട്ടിലിരുന്ന് ഒരു online business തുടങ്ങാൻ ആഗ്രഹിക്കുന്ന ഓരോ മലയാളിക്കും വ്യക്തമായ വഴി കാണിച്ചുകൊടുക്കുക.”"
+  },
+  // Add REAL student reviews only. Section stays hidden while this list is empty.
+  // Example: { text: "Classes വളരെ clear ആയിരുന്നു.", name: "Student Name" }
+  testimonials: [],
+  social: { instagram: "", youtube: "", email: "" },   // full URLs / email address
+  legal: { refund: "", terms: "", privacy: "" }        // links to your policy pages
 };
-/* ======================================= */
+/* ================================================================ */
 
+const ICONS = {
+  check:'<path d="M20 6 9 17l-5-5"/>', arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  phone:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  palette:'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7" r="1"/><circle cx="16" cy="10" r="1"/><path d="M12 21a3 3 0 0 1 0-6h2"/>',
+  camera:'<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/>', video:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/>',
+  insta:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12z"/>', pen:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/>', box:'<path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/>',
+  truck:'<path d="M2 6h12v10H2zM14 10h4l4 4v2h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>', cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/>',
+  calc:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h8"/>', chart:'<path d="M3 3v18h18M7 15l4-4 3 3 6-6"/>',
+  sparkle:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/>', support:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
+  flow:'<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h6a3 3 0 0 1 3 3v6"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  book:'<path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM20 19v2H6"/>', award:'<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/>',
+  star:'<path d="m12 3 2.8 5.8 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.7l6.2-.9z"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  rupee:'<path d="M6 4h12M6 9h12M9 4c6 0 6 10 0 10H6l8 7"/>', fire:'<path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-5 5-5 8-1-1-2-2-2-4-2 2-2 5-2 8 0 4 3 7 7 7z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', yt:'<rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/>'
+};
+const svg = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||""}</svg>`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
-const waLink = msg => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+const wa = m => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(m)}`;
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+const card = (i, t, d) => `<div class="card"><div class="ico">${svg(i)}</div><h3>${t}</h3><p>${d}</p></div>`;
 
-document.querySelectorAll("[data-price]").forEach(e => e.textContent = inr(CONFIG.price));
-document.querySelectorAll("[data-mrp]").forEach(e => e.textContent = inr(CONFIG.mrp));
-document.querySelectorAll("[data-brand-text]").forEach(e => e.textContent = CONFIG.brand);
-document.querySelectorAll("[data-wa]").forEach(e => { e.href = waLink("Hi, Reselling Course-നെ കുറിച്ച് കൂടുതൽ അറിയണം."); e.target = "_blank"; e.rel = "noopener"; });
-document.querySelectorAll("[data-buy]").forEach(e => {
-  e.href = CONFIG.paymentLink || waLink(`Hi, എനിക്ക് Reselling Course-ൽ (${inr(CONFIG.price)}) enroll ചെയ്യണം.`);
-  e.target = "_blank"; e.rel = "noopener";
-});
-document.getElementById("yr").textContent = new Date().getFullYear();
+/* bind config */
+$$("[data-brand]").forEach(e => e.textContent = CONFIG.brand);
+$$("[data-price]").forEach(e => e.textContent = inr(CONFIG.price));
+$$("[data-mrp]").forEach(e => e.textContent = inr(CONFIG.mrp));
+$$("[data-wa]").forEach(e => { e.href = wa("Hi, Reselling Course-നെ കുറിച്ച് കൂടുതൽ അറിയണം."); e.target = "_blank"; e.rel = "noopener"; });
+$$("[data-buy]").forEach(e => { e.href = CONFIG.paymentLink || wa(`Hi, എനിക്ക് Reselling Course-ൽ (${inr(CONFIG.price)}) enroll ചെയ്യണം.`); e.target = "_blank"; e.rel = "noopener"; });
+$("#yr").textContent = new Date().getFullYear();
 
-/* Curriculum */
-const MODULES = [
-  ["Dropshipping & Reselling Basics", ["Dropshipping vs Reselling", "Meesho-യുടെ role", "Stock ഇല്ലാത്ത business model", "Business risks മനസ്സിലാക്കാം"]],
-  ["Business Mindset", ["Easy money അല്ല — real business", "Revenue vs Profit", "Product വിജയിച്ചില്ലെങ്കിൽ എന്ത് ചെയ്യണം", "Consistency"]],
-  ["Niche Selection", ["Niche എന്താണ്", "Demand, competition, return risk", "Focused niche-ൽ തുടങ്ങാം", "Target audience"]],
-  ["Product Research", ["Winning product എങ്ങനെ കണ്ടെത്താം", "Price, ratings, reviews പരിശോധന", "Rating മാത്രം പോരാ", "Content potential"]],
-  ["Competitor Research", ["Competitor strategy പഠിക്കാം", "Copy അല്ല — original positioning", "Reels, offers, engagement analysis"]],
-  ["Brand Name", ["Short, memorable, easy to spell", "Instagram username & domain check", "Trademark conflicts ഒഴിവാക്കാം"]],
-  ["Logo Design", ["Simple & scalable logo", "Colour-ന്റെ പ്രാധാന്യം", "Too many elements ഒഴിവാക്കാം"]],
-  ["Brand Identity", ["Colours, fonts, imagery", "Brand consistency", "എല്ലാ touchpoints-ലും ഒരേ style"]],
-  ["Instagram Store", ["Professional account setup", "Bio — value proposition + CTA", "Highlights: Products, Reviews, FAQ"]],
-  ["WhatsApp Business", ["Business profile", "Catalogue setup", "Labels & Quick Replies"]],
-  ["Product Sample & Content", ["Sample വാങ്ങുന്നതിന്റെ ഗുണം", "Unboxing, demo, review content", "Supplier images-നേക്കാൾ original content"]],
-  ["Product Photography", ["Lighting, background, framing", "Smartphone മതി", "Front, side, close-up, usage angles"]],
-  ["Product Video", ["Hook → Problem → Product → Demo → Benefit → CTA", "Attention പിടിക്കുന്ന Hook", "CTA: “WhatsApp to Order”"]],
-  ["Voice-over", ["Clear voice, short script", "Timing & pronunciation", "AI voice — ശ്രദ്ധിക്കേണ്ടത്"]],
-  ["Product Poster Design", ["Image, headline, benefits, price, CTA", "Visual hierarchy", "Unnecessary text ഒഴിവാക്കാം"]],
-  ["Copywriting", ["Feature vs Benefit", "Captions that convert", "CTA examples"]],
-  ["Instagram Content Strategy", ["Content pillars", "Educational, lifestyle, testimonial mix", "Content calendar"]],
-  ["Organic Marketing", ["Ads ഇല്ലാതെ audience build ചെയ്യാം", "Reels for reach", "WhatsApp Status marketing"]],
-  ["WhatsApp Sales", ["“Price?” enquiry handling", "Polite follow-ups (no spam)", "Customer trust build ചെയ്യാം"]],
-  ["Sales Closing", ["Sales funnel", "Attention → Interest → Trust → Desire → Action", "Pressure ഇല്ലാതെ close ചെയ്യാം"]],
-  ["Meta Ads", ["Paid marketing basics", "CTR & CPC", "Ad creative testing"]],
-  ["Content to Sale System", ["Content → Enquiry → WhatsApp → Trust → Order", "Awareness vs sales content"]],
-  ["Order Management", ["Order confirm ചെയ്യുന്നതിന് മുമ്പ് verify", "Order tracking", "Order records"]],
-  ["Returns & Customer Support", ["Complaints handle ചെയ്യാം", "Return policy അറിയണം", "Delivery delay — truthful updates"]],
-  ["Profit Calculation", ["Profit = Selling Price − Total Costs", "Hidden costs: ads, returns, discounts", "High sales ≠ high profit"]],
-  ["Scaling", ["Working product scale ചെയ്യാം", "Creative variations test", "Data നോക്കി gradual growth"]],
-  ["AI for Reselling", ["Descriptions, hooks, captions, scripts AI-യിൽ", "AI output verify ചെയ്യണം", "AI logo — originality & trademarks"]],
-  ["Final Practical Project", ["Product research മുതൽ performance review വരെ 18 steps", "Final Exam (12 questions)", "Student Final Assessment"]],
-];
-const modsEl = document.getElementById("mods");
-modsEl.innerHTML = MODULES.map(([t, items], i) => `
-  <details class="mod" ${i >= 8 ? 'data-extra hidden' : ''}>
-    <summary><span class="num">${String(i + 1).padStart(2, "0")}</span>${t}</summary>
-    <ul>${items.map(x => `<li>${x}</li>`).join("")}</ul>
-  </details>`).join("");
-const toggle = document.getElementById("toggleMods");
-toggle.addEventListener("click", () => {
-  const extras = modsEl.querySelectorAll("[data-extra]");
-  const showing = !extras[0].hidden;
-  extras.forEach(e => e.hidden = showing);
-  toggle.textContent = showing ? "എല്ലാ 28 Modules-ഉം കാണിക്കുക" : "കുറച്ച് കാണിക്കുക";
-});
+/* hero media */
+$("#heroMedia").innerHTML = CONFIG.youtubeId
+  ? `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(CONFIG.youtubeId)}" title="Course intro video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+  : (m => { m.classList.add("flowbox"); return [
+      ["box","Supplier Price","Meesho-യിൽ product കണ്ടെത്തുന്നു","₹300"],
+      ["insta","Your Selling Price","Instagram / WhatsApp വഴി market ചെയ്യുന്നു","₹499"],
+      ["truck","Supplier Ships","നേരിട്ട് customer-ലേക്ക് — നിങ്ങൾ product തൊടേണ്ട","✓"]
+    ].map(([i,t,d,a]) => `<div class="frow"><div class="ico">${svg(i)}</div><div><b>${t}</b><small>${d}</small></div><div class="amt">${a}</div></div>`).join("")
+    + `<div class="ftotal"><span>Gross Margin</span><span>₹199</span></div><small style="color:var(--dim);font-size:.75rem">* ഉദാഹരണം. Shipping, charges, ads, returns കുറച്ചാണ് യഥാർത്ഥ profit — course-ൽ പഠിക്കാം.</small>`; })($("#heroMedia"));
 
-/* Profit calculator */
-const ids = ["sell", "cost", "ship", "pay", "ads", "ret"];
-const val = id => Math.max(0, parseFloat(document.getElementById("c-" + id).value) || 0);
-function calc() {
-  const sell = val("sell");
-  const costs = val("cost") + val("ship") + val("pay") + val("ads") + val("ret");
-  const profit = sell - costs;
-  document.getElementById("o-rev").textContent = inr(sell);
-  document.getElementById("o-cost").textContent = inr(costs);
-  document.getElementById("o-margin").textContent = sell ? Math.round(profit / sell * 100) + "%" : "—";
-  const p = document.getElementById("o-profit");
-  p.textContent = (profit < 0 ? "−" : "") + inr(Math.abs(profit));
-  p.className = "big " + (profit < 0 ? "neg" : "pos");
+/* learn + why */
+$("#learn").innerHTML = [
+  ["box","Reselling & Dropshipping basics","Stock ഇല്ലാത്ത business model, Meesho-യുടെ role, risks എന്നിവ വ്യക്തമായി."],
+  ["target","Niche & target audience","Demand, competition, return risk നോക്കി ശരിയായ niche തിരഞ്ഞെടുക്കാം."],
+  ["search","Winning products കണ്ടെത്താം","Price, ratings, reviews, content potential നോക്കി product research."],
+  ["palette","Brand name, logo & identity","Short, memorable brand-ഉം consistent visual style-ഉം build ചെയ്യാം."],
+  ["insta","Instagram store setup","Professional profile, bio, highlights — customers-ന് trust തോന്നുന്ന page."],
+  ["chat","WhatsApp Business","Catalogue, labels, quick replies — enquiries professional ആയി handle ചെയ്യാം."],
+  ["camera","Phone-ൽ product photography","Lighting, background, angles — expensive camera ഇല്ലാതെ."],
+  ["video","Reels, voice-over & posters","Hook → Problem → Demo → Benefit → CTA structure-ൽ scroll നിർത്തുന്ന content."],
+  ["pen","Copywriting & captions","Feature vs benefit, CTA — വായിച്ചാൽ order ചെയ്യാൻ തോന്നുന്ന captions."],
+  ["megaphone","Organic marketing & Meta Ads","Reels, WhatsApp Status, പിന്നെ CTR, CPC, creative testing ഉള്ള paid ads."],
+  ["truck","Orders, returns & support","Order verify, tracking, complaints, returns — customer-നെ happy ആക്കാം."],
+  ["chart","Profit, scaling & AI","യഥാർത്ഥ profit കണക്കാക്കൽ, data നോക്കി scaling, AI tools ഉപയോഗം."]
+].map(a => card(...a)).join("");
+$("#why").innerHTML = [
+  ["box","No inventory","വലിയ stock മുൻകൂട്ടി വാങ്ങി സൂക്ഷിക്കേണ്ടതില്ല."],
+  ["search","Product details ready","Price, images, ratings, reviews, delivery info, return policy പരിശോധിക്കാം."],
+  ["cash","Cash on Delivery","ചില products/locations-ൽ COD — ഓരോ order-നും ലഭ്യത check ചെയ്യണം."],
+  ["truck","Delivery handled","Platform delivery സംവിധാനം വഴി product customer-ലേക്ക് എത്തുന്നു."],
+  ["megaphone","നിങ്ങളുടെ focus: marketing","Instagram, WhatsApp, website വഴി promote ചെയ്ത് orders നേടാം."],
+  ["calc","നിങ്ങളുടെ price, നിങ്ങളുടെ margin","എല്ലാ costs-ഉം കണക്കാക്കി selling price തീരുമാനിക്കാം."]
+].map(a => card(...a)).join("");
+
+/* founder */
+const F = CONFIG.founder;
+if (F) {
+  $$("[data-founder-name]").forEach(e => e.textContent = F.name);
+  $("#founderPhoto").innerHTML = (F.photo ? `<img src="${esc(F.photo)}" alt="${esc(F.name)}">` : `<div class="ph">${esc(F.name.trim()[0] || "?")}</div>`)
+    + `<div class="cap"><b>${esc(F.name)}</b><small>${esc(F.role)}</small></div>`;
+  $("#founderBio").innerHTML = F.bio.map(p => `<p>${esc(p)}</p>`).join("");
+  $("#founderMission").textContent = F.mission;
 }
-ids.forEach(id => document.getElementById("c-" + id).addEventListener("input", calc));
+
+/* testimonials */
+$("#tgrid").innerHTML = CONFIG.testimonials.map(t => `<div class="card tcard"><div class="stars">★★★★★</div><p>“${esc(t.text)}”</p><div class="who"><span class="av">${esc(t.name.trim()[0] || "")}</span>${esc(t.name)}</div></div>`).join("");
+$$("[data-if]").forEach(e => {
+  const k = e.dataset.if;
+  if ((k === "founder" && !F) || (k === "testimonials" && !CONFIG.testimonials.length)) e.hidden = true;
+});
+
+/* curriculum */
+const MODULES = [
+  ["Dropshipping & Reselling Basics",["Dropshipping vs Reselling","Meesho-യുടെ role","Stock ഇല്ലാത്ത business model","Business risks"]],
+  ["Business Mindset",["Easy money അല്ല — real business","Revenue vs Profit","Product വിജയിച്ചില്ലെങ്കിൽ","Consistency"]],
+  ["Niche Selection",["Niche എന്താണ്","Demand, competition, return risk","Focused niche","Target audience"]],
+  ["Product Research",["Winning product","Price, ratings, reviews","Rating മാത്രം പോരാ","Content potential"]],
+  ["Competitor Research",["Competitor strategy പഠിക്കാം","Copy അല്ല — original positioning","Reels, offers, engagement analysis"]],
+  ["Brand Name",["Short, memorable, easy to spell","Username & domain check","Trademark conflicts ഒഴിവാക്കാം"]],
+  ["Logo Design",["Simple & scalable logo","Colour-ന്റെ പ്രാധാന്യം","Too many elements ഒഴിവാക്കാം"]],
+  ["Brand Identity",["Colours, fonts, imagery","Brand consistency","എല്ലാ touchpoints-ലും ഒരേ style"]],
+  ["Instagram Store",["Professional account","Bio — value + CTA","Highlights: Products, Reviews, FAQ"]],
+  ["WhatsApp Business",["Business profile","Catalogue","Labels & Quick Replies"]],
+  ["Product Sample & Content",["Sample-ന്റെ ഗുണം","Unboxing, demo, review content","Original content vs supplier images"]],
+  ["Product Photography",["Lighting, background, framing","Smartphone മതി","Multiple angles"]],
+  ["Product Video",["Hook → Problem → Product → Demo → Benefit → CTA","Strong hooks","“WhatsApp to Order” CTA"]],
+  ["Voice-over",["Clear voice, short script","Timing & pronunciation","AI voice — ശ്രദ്ധിക്കേണ്ടത്"]],
+  ["Product Poster Design",["Image, headline, benefits, price, CTA","Visual hierarchy","Less text, more impact"]],
+  ["Copywriting",["Feature vs Benefit","Captions that convert","CTA examples"]],
+  ["Instagram Content Strategy",["Content pillars","Content mix","Content calendar"]],
+  ["Organic Marketing",["Ads ഇല്ലാതെ reach","Reels","WhatsApp Status marketing"]],
+  ["WhatsApp Sales",["“Price?” enquiry handling","Polite follow-ups","Customer trust"]],
+  ["Sales Closing",["Sales funnel","Attention → Interest → Trust → Desire → Action","Pressure ഇല്ലാതെ close ചെയ്യാം"]],
+  ["Meta Ads",["Paid marketing basics","CTR & CPC","Ad creative testing"]],
+  ["Content to Sale System",["Content → Enquiry → WhatsApp → Trust → Order","Awareness vs sales content"]],
+  ["Order Management",["Order verify","Tracking","Order records"]],
+  ["Returns & Customer Support",["Complaints","Return policy","Delivery delay — truthful updates"]],
+  ["Profit Calculation",["Profit = Selling Price − Total Costs","Hidden costs","High sales ≠ high profit"]],
+  ["Scaling",["Working product scale ചെയ്യാം","Creative variations","Data-driven growth"]],
+  ["AI for Reselling",["Descriptions, hooks, captions, scripts","AI output verify ചെയ്യണം","AI logo — originality"]],
+  ["Final Practical Project",["18-step practical project","Final Exam (12 questions)","Student Final Assessment"]]
+];
+$("#mods").innerHTML = MODULES.map(([t, it], i) => `<details class="mod"${i >= 8 ? " data-x hidden" : ""}><summary><span class="n">${String(i+1).padStart(2,"0")}</span>${t}</summary><ul>${it.map(x => `<li>${x}</li>`).join("")}</ul></details>`).join("");
+$("#toggleMods").onclick = function () {
+  const x = $$("[data-x]"), show = x[0].hidden;
+  x.forEach(e => e.hidden = !show);
+  this.textContent = show ? "കുറച്ച് കാണിക്കുക" : "എല്ലാ 28 Modules-ഉം കാണിക്കുക";
+};
+
+/* project chain */
+$("#chain").innerHTML = ["Brand Name + Logo","Instagram Profile","WhatsApp Business","1 Selected Product","5 Product Photos","2 Posters","2 Reels","1 Voice-over Video","Product Description","WhatsApp Catalogue","Customer Chat Simulation","Profit Calculation"].map(s => `<span>${svg("check")}${s}</span>`).join("");
+
+/* faq */
+$("#faqList").innerHTML = [
+  ["എന്താണ് ഈ course?","Meesho പോലുള്ള platform-ലെ products സ്വന്തം Instagram / WhatsApp / website വഴി sell ചെയ്ത് margin നേടുന്ന reselling business, തുടക്കം മുതൽ step-by-step പഠിപ്പിക്കുന്ന 28-module Malayalam course."],
+  ["Laptop-ഓ മുൻപരിചയമോ വേണോ?","വേണ്ട. Smartphone മതി. Absolute beginners-നെ ഉദ്ദേശിച്ചാണ് course design ചെയ്തിരിക്കുന്നത്."],
+  ["Course fee എത്രയാണ്?",`One-time ${inr(CONFIG.price)}. Lifetime access, templates, final project, WhatsApp support ഉൾപ്പെടെ.`],
+  ["Business തുടങ്ങാൻ എത്ര investment വേണം?","വലിയ stock വാങ്ങേണ്ടതില്ല. Content-ന് ഒരു product sample (optional), ആവശ്യമെങ്കിൽ ചെറിയ ad budget — ഇത്ര മതി."],
+  ["Income guarantee ഉണ്ടോ?","ഇല്ല. Reselling ഒരു real business ആണ് — product quality, returns, ad cost പോലുള്ള risks ഉണ്ട്. Results നിങ്ങളുടെ effort-ഉം consistency-യും അനുസരിച്ചിരിക്കും."],
+  ["Followers ഇല്ലെങ്കിൽ sales കിട്ടുമോ?","Reels, WhatsApp Status പോലുള്ള organic methods, Meta Ads, content → sale system എന്നിവ ഉപയോഗിച്ച് zero-ൽ നിന്ന് audience build ചെയ്യുന്നത് course-ൽ പഠിപ്പിക്കുന്നു."],
+  ["Cash on Delivery orders എടുക്കാമോ?","ചില products-നും locations-നും COD ലഭ്യമാണ്, എല്ലായിടത്തും ഒരുപോലെയല്ല. ഓരോ order-നും check ചെയ്യുന്ന രീതി course-ൽ ഉണ്ട്."],
+  ["Part-time ആയി ചെയ്യാമോ?","തീർച്ചയായും. ദിവസം 1–2 മണിക്കൂർ consistent ആയി കൊടുത്താൽ മതി — students, job ചെയ്യുന്നവർ, homemakers എല്ലാവർക്കും പറ്റും."],
+  ["Payment കഴിഞ്ഞ് access എങ്ങനെ കിട്ടും?","Payment confirm ആയാൽ WhatsApp / email വഴി course access details അയച്ചു തരും."],
+  ["Join ചെയ്ത ശേഷം support ഉണ്ടോ?","ഉണ്ട്. സംശയങ്ങൾക്ക് WhatsApp support, final project-ന് feedback."]
+].map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
+
+/* footer links */
+const S = CONFIG.social, L = CONFIG.legal;
+$("#social").innerHTML = [
+  S.instagram && `<a href="${esc(S.instagram)}" target="_blank" rel="noopener">${svg("insta")}Instagram</a>`,
+  S.youtube && `<a href="${esc(S.youtube)}" target="_blank" rel="noopener">${svg("yt")}YouTube</a>`,
+  `<a href="${S.email ? "mailto:" + esc(S.email) : wa("Hi, I have a question about the course.")}" target="_blank" rel="noopener">${svg("mail")}Contact Us</a>`
+].filter(Boolean).join("");
+$("#legal").innerHTML = [["Refund Policy", L.refund], ["Terms & Conditions", L.terms], ["Privacy Policy", L.privacy]]
+  .filter(([, u]) => u).map(([t, u]) => `<a href="${esc(u)}">${t}</a>`).join(" · ");
+
+/* inline icons */
+$$("i[data-i]").forEach(e => e.outerHTML = svg(e.dataset.i));
+
+/* calculator */
+const v = id => Math.max(0, parseFloat($("#c-" + id).value) || 0);
+function calc() {
+  const sell = v("sell"), cost = v("cost") + v("ship") + v("pay") + v("ads") + v("ret"), p = sell - cost;
+  $("#o-rev").textContent = inr(sell);
+  $("#o-cost").textContent = inr(cost);
+  $("#o-margin").textContent = sell ? Math.round(p / sell * 100) + "%" : "—";
+  const o = $("#o-profit"); o.textContent = (p < 0 ? "−" : "") + inr(Math.abs(p)); o.className = "big " + (p < 0 ? "neg" : "pos");
+  $("#exProfit").textContent = o.textContent;
+}
+["sell","cost","ship","pay","ads","ret"].forEach(id => $("#c-" + id).addEventListener("input", calc));
 calc();
 </script>
 </body>
