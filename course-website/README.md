@@ -4,12 +4,14 @@ A single-page, mobile-first website for selling the Malayalam Reselling Course (
 
 ## Before going live — edit `CONFIG` near the bottom of `index.html`
 
-- `brand`, `price`, `mrp`, `whatsapp` (country code + number, no "+")
-- `paymentLink` — Razorpay / Instamojo / Cashfree link (empty = enroll via WhatsApp)
-- `youtubeId` — intro video shown in the hero (empty = ₹300 → ₹499 example card)
-- `founder` — name, role, photo path, bio paragraphs, mission line (`null` hides the section)
-- `testimonials` — real student reviews only; the section stays hidden while empty
-- `social`, `legal` — Instagram / YouTube / email and refund / terms / privacy page links
+- `brand`, `price`, `mrp`, `whatsapp` (country code + number, no "+"), `paymentLink`
+- `youtubeId` — intro video in the hero (empty = ₹300 → ₹499 example card)
+- `earlyAccess` — show/hide the Early Access notice
+- `founder` — name, role, photo, bio, mission (`null` hides the section)
+- `bonus`, `income` — bonus checklist and the three income-potential cards (illustrative; keep the disclaimer)
+- `proof`, `results` — your own and your students' real screenshots (put images in `assets/`)
+- `testimonials` — real student reviews only
+- `social`, `legal` — Instagram / YouTube / email, refund and terms links
 
 ## Sections
-Dark theme with gold accents. Hero with ₹300 → ₹499 example · What is reselling (workflow image) · 6-step workflow · Why Meesho, mentor section, student feedback (when added), what you need · What you'll learn · 28-module curriculum (expandable) · Live profit calculator · Final project · Who it's for · Pricing · FAQ · Disclaimer (not affiliated with Meesho/Meta; no income guarantee) · Floating WhatsApp button and sticky mobile buy bar.
+Hero (video) · What You Will Learn (+ 28 modules) · Bonus · Founder · Income Potential · Proof of Work carousel · Real Results carousel · Student Feedback · What You Need · FAQ · Early Access Notice · Final CTA · Footer. Dark theme with gold accents, floating WhatsApp button and sticky mobile buy bar.
