@@ -24,9 +24,7 @@ In code: `input` names in English with an `Inp` prefix, enums `ENUM_*` with Engl
 ## 01. Entry modes
 
 ### A. Candle-based entry
-Modes (`ENUM_CANDLE_PATTERN`): Previous Candle Bullish → Buy · Previous Candle Bearish → Sell · Two Bullish Candles → Buy ·
-Two Bearish Candles → Sell · Three Candle Confirmation · Engulfing Pattern · Pin Bar · Inside Bar · Outside Bar ·
-Doji Reversal · Candle High Breakout · Candle Low Breakout · Candle Body Breakout · Wick Rejection · Consecutive Candle Direction.
+Available modes (`ENUM_CANDLE_PATTERN`): Previous Candle Bullish -> Buy · Previous Candle Bearish -> Sell · Two Bullish Candles -> Buy · Two Bearish Candles -> Sell · Three Candle Confirmation · Engulfing Pattern · Pin Bar · Inside Bar · Outside Bar · Doji Reversal · Candle High Breakout · Candle Low Breakout · Candle Body Breakout · Wick Rejection · Consecutive Candle Direction.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -43,8 +41,7 @@ Doji Reversal · Candle High Breakout · Candle Low Breakout · Candle Body Brea
 mode repaints and can overtrade intrabar. Compatible with every exit/lot module; with NOW use tick or bar-close timing.
 
 ### B. Breakout entry
-Modes (`ENUM_BREAKOUT_MODE`): Previous Candle High · Previous Candle Low · Daily High/Low · Weekly High/Low · Asian Session ·
-London Session · New York Session · Range · Support/Resistance · Donchian Channel · Volatility.
+Available modes (`ENUM_BREAKOUT_MODE`): Previous Candle High Breakout · Previous Candle Low Breakout · Daily High/Low Breakout · Weekly High/Low Breakout · Asian Session Breakout · London Session Breakout · New York Session Breakout · Range Breakout · Support/Resistance Breakout · Donchian Channel Breakout · Volatility Breakout.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -59,8 +56,7 @@ London Session · New York Session · Range · Support/Resistance · Donchian Ch
 Risk: false breaks in ranges, slippage on stop entries. Compatible with stop orders (§05), session filter (§22).
 
 ### C. Pullback entry
-Modes (`ENUM_PULLBACK_MODE`): EMA · Support/Resistance · Fibonacci Retracement · Trendline · VWAP · Breakout Retest ·
-Order Block Retest · Fair Value Gap Retest.
+Available modes (`ENUM_PULLBACK_MODE`): EMA Pullback · Support/Resistance Pullback · Fibonacci Retracement · Trendline Pullback · VWAP Pullback · Breakout Retest · Order Block Retest · Fair Value Gap Retest.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -107,8 +103,7 @@ handles created once in `OnInit`. Gates (ATR, ADX) only allow/block; they never 
 ---
 
 ## 02. Smart Money Concepts (SMC)
-Concepts: Order Block · Fair Value Gap · BOS · CHOCH · Buy-Side Liquidity · Sell-Side Liquidity · Liquidity Sweep ·
-Inducement · Premium Zone · Discount Zone · Equilibrium · Displacement · Mitigation · Breaker Block · Mitigation Block.
+Available modes: Order Block (OB) · Fair Value Gap (FVG) · Break of Structure (BOS) · Change of Character (CHOCH) · Buy Side Liquidity (BSL) · Sell Side Liquidity (SSL) · Liquidity Sweep · Inducement · Premium Zone · Discount Zone · Equilibrium · Displacement · Mitigation · Breaker Block · Mitigation Block.
 
 | Parameter | Type | Options | Default | Working logic |
 |---|---|---|---|---|
@@ -134,8 +129,7 @@ Risk: zone over-fitting; stops beyond the zone/swing.
 ---
 
 ## 03. Multi-timeframe confirmation
-Modes: All Timeframes Confirm · Any Timeframe Confirm · Majority Confirmation · Higher Timeframe Bias ·
-Lower Timeframe Entry · HTF Trend + LTF Signal.
+Available modes: All Timeframes Confirm · Any Timeframe Confirm · Majority Confirmation · Higher Timeframe Bias · Lower Timeframe Entry · HTF Trend + LTF Signal.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -173,8 +167,7 @@ Economic Calendar (not available in the tester) or a reliable external source.
 ---
 
 ## 05. Entry execution modes
-Modes: Market Order · Buy Stop · Sell Stop · Buy Limit · Sell Limit · Instant Entry · Tick-Based Entry · Bar Open Entry ·
-Bar Close Entry · Retest Entry · Hybrid Execution.
+Available modes: Market Order · Buy Stop · Sell Stop · Buy Limit · Sell Limit · Instant Entry · Tick-Based Entry · Bar Open Entry · Bar Close Entry · Retest Entry · Hybrid Execution.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -212,7 +205,7 @@ Hedge: BUY kept + SELL opened (needs a hedging account or netting-specific handl
 ---
 
 ## 07. Take profit modes
-Modes: Fixed · Points · Price · Money · ATR · Risk-Reward · Structure · Basket.
+Available modes: Fixed TP · Points-Based TP · Price-Based TP · Money-Based TP · ATR-Based TP · Risk-Reward TP · Structure-Based TP · Basket TP.
 
 | Parameter | Type | Default | Range | Working logic |
 |---|---|---|---|---|
@@ -228,7 +221,7 @@ Fixed/points/price set a price target; money closes at the profit amount; ATR sc
 distance; structure targets a defined S/R or liquidity level; basket closes the group at its combined target.
 
 ## 08. Stop loss modes
-Modes: Fixed · Points · Price · ATR · Previous Candle · Swing High/Low · Structure · Money · Equity-Based Protection.
+Available modes: Fixed Stop Loss · Points-Based SL · Price-Based SL · ATR-Based SL · Previous Candle SL · Swing High/Low SL · Structure-Based SL · Money-Based SL · Equity-Based Protection.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -244,7 +237,7 @@ Buy SL below entry, sell SL above. Money/equity protection may need closing posi
 **Define whether SL is fixed at entry or recalculated.**
 
 ## 09. Trailing stop modes
-Modes: Fixed · Step · ATR · Percentage · Candle · Swing · Parabolic SAR · Chandelier Exit.
+Available modes: Fixed Trailing · Step Trailing · ATR Trailing · Percentage Trailing · Candle Trailing · Swing Trailing · Parabolic SAR Trailing · Chandelier Exit.
 
 | Parameter | Type | Default | Working logic |
 |---|---|---|---|
@@ -260,7 +253,7 @@ After activation the stop follows price; buy SL only moves up, sell SL only down
 stop/freeze levels and throttle modifications.
 
 ## 10. Break-even modes
-Modes: Fixed · Break Even Plus · ATR · Percentage · Partial.
+Available modes: Fixed Break Even · Break Even Plus · ATR Break Even · Percentage Break Even · Partial Break Even.
 
 | Parameter | Type | Default | Working logic |
 |---|---|---|---|
@@ -274,7 +267,7 @@ Modes: Fixed · Break Even Plus · ATR · Percentage · Partial.
 when true net break-even is required.
 
 ## 11. Partial close & multiple targets
-Modes: Single Partial · TP1+TP2 · TP1+TP2+TP3 · Percentage-Based · Money-Based.
+Available modes: Single Partial Close · TP1 + TP2 · TP1 + TP2 + TP3 · Percentage-Based Close · Money-Based Partial Close.
 
 | Parameter | Type | Default | Working logic |
 |---|---|---|---|
@@ -301,8 +294,7 @@ residual that would be invalid (close it all).
 **Specify whether timers start at fill time or signal time** (default: fill time).
 
 ## 13. Basket & equity management
-Modes: Money Basket TP · Percentage Basket TP · Points Basket TP · Weighted Average Exit · Equity TP · Equity SL ·
-Combined Basket Protection.
+Available modes: Money-Based Basket TP · Percentage-Based Basket TP · Points-Based Basket TP · Weighted Average Exit · Equity Take Profit · Equity Stop Loss · Combined Basket Protection.
 
 | Parameter | Type | Default | Working logic |
 |---|---|---|---|
@@ -321,8 +313,7 @@ Define whether profit includes commission, swap, realized and floating P/L. Scop
 ---
 
 ## 14. Lot sizing modes
-Modes: Fixed · Balance % Risk · Equity % Risk · Free Margin · Dynamic · Compounding · Anti-Compounding · ATR-Based ·
-Volatility-Based · Martingale · Anti-Martingale · Fibonacci · Custom Sequence · Recovery-Based.
+Available modes: Fixed Lot · Balance Percentage Risk · Equity Percentage Risk · Free Margin-Based Lot · Dynamic Lot · Compounding Lot · Anti-Compounding Lot · ATR-Based Lot · Volatility-Based Lot · Martingale Lot · Anti-Martingale Lot · Fibonacci Lot · Custom Sequence Lot · Recovery-Based Lot.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -358,8 +349,7 @@ Martingale and recovery modes increase exposure and can cause rapid losses.
 | DailyProfitTarget | double (money) | account dependent | — | Stop after target |
 | DailyTradeLimit | int | 20 | — | Entries per day |
 
-Protection modes: Daily Money Loss · Daily % Loss · Floating Loss · Realized Loss · Combined Loss · Balance DD ·
-Equity DD · Peak Equity DD · Consecutive Loss · Margin Protection. At a limit: stop new trades; a **separate option**
+Available protection modes: Daily Money Loss · Daily Percentage Loss · Floating Loss · Realized Loss · Combined Loss · Balance Drawdown · Equity Drawdown · Peak Equity Drawdown · Consecutive Loss Protection · Margin Protection. At a limit: stop new trades; a **separate option**
 closes existing positions. Define the daily reset time and scope (per EA, per symbol or account-wide).
 
 ## 16. Spread & slippage protection
@@ -380,8 +370,7 @@ Spread = Ask − Bid. Slippage = expected − actual fill price. Distinguish pri
 ---
 
 ## 17. Grid trading modes
-Modes: Classic · Buy · Sell · Buy & Sell · Reverse · Trend Following · Counter Trend · Hedged · Recovery · Dynamic ·
-Adaptive · Candle-Based · Breakout · Zone-Based · Multi-Level.
+Available modes: Classic Grid · Buy Grid · Sell Grid · Buy & Sell Grid · Reverse Grid · Trend Following Grid · Counter Trend Grid · Hedged Grid · Recovery Grid · Dynamic Grid · Adaptive Grid · Candle-Based Grid · Breakout Grid · Zone-Based Grid · Multi-Level Grid.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -401,7 +390,7 @@ accounts for the reference price, existing positions, spread and broker constrai
 explicit exposure and loss limits.
 
 ## 18. Grid spacing modes
-Modes: Fixed Price · Points · ATR · Percentage · Candle Range · Fibonacci · Dynamic · Adaptive.
+Available modes: Fixed Price Distance · Points-Based Distance · ATR-Based Distance · Percentage-Based Distance · Candle Range Distance · Fibonacci Distance · Dynamic Grid Step · Adaptive Grid Step.
 
 | Parameter | Type | Default | Working logic |
 |---|---|---|---|
@@ -416,8 +405,7 @@ Modes: Fixed Price · Points · ATR · Percentage · Candle Range · Fibonacci �
 Always enforce minimum and maximum spacing.
 
 ## 19. Grid lot progression
-Modes: Fixed · Arithmetic · Geometric · Martingale · Anti-Martingale · Fibonacci · Custom Sequence · Risk-Based ·
-Recovery-Based · Decreasing · Alternating · Hybrid.
+Available modes: Fixed Lot · Arithmetic Progression · Geometric Progression · Martingale · Anti-Martingale · Fibonacci Progression · Custom Sequence · Risk-Based Progression · Recovery-Based Progression · Decreasing Lot · Alternating Lot · Hybrid Progression.
 
 | Parameter | Type | Default | Range | Working logic |
 |---|---|---|---|---|
@@ -434,7 +422,7 @@ Geometric ×1.5 0.01→0.015→0.0225→0.03375 (then normalized to the volume s
 Custom e.g. 0.01→0.09→0.45→2.25. Normalize each lot and enforce per-order and total caps.
 
 ## 20. Hedge modes
-Modes: Disabled · Full · Partial · Dynamic · Recovery · Emergency · Grid · Signal-Based · Profit Lock · Directional.
+Available modes: Disabled · Full Hedge · Partial Hedge · Dynamic Hedge · Recovery Hedge · Emergency Hedge · Grid Hedge · Signal-Based Hedge · Profit Lock Hedge · Directional Hedge.
 
 | Parameter | Type | Options | Default | Range | Working logic |
 |---|---|---|---|---|---|
@@ -451,8 +439,7 @@ Modes: Disabled · Full · Partial · Dynamic · Recovery · Emergency · Grid �
 swap and margin remain. Confirm the account supports hedging.
 
 ## 21. Recovery modes
-Modes: Disabled · Lot Multiplier · Opposite Direction · Grid · Hedge · Basket · Partial · Average Price · Profit Target ·
-Multi-Level.
+Available modes: Disabled · Lot Multiplier Recovery · Opposite Direction Recovery · Grid Recovery · Hedge Recovery · Basket Recovery · Partial Recovery · Average Price Recovery · Profit Target Recovery · Multi-Level Recovery.
 
 | Parameter | Type | Default | Range | Working logic |
 |---|---|---|---|---|
@@ -471,7 +458,7 @@ margin, drawdown and timeout limits. **Recovery is not guaranteed.**
 ---
 
 ## 22. Session & time filters
-Modes: 24-Hour · Asian · London · New York · London + New York · Custom · Multiple · Overlap · Session Breakout.
+Available modes: 24-Hour Trading · Asian Session · London Session · New York Session · London + New York · Custom Session · Multiple Sessions · Session Overlap · Session Breakout.
 
 | Parameter | Type | Default | Range | Working logic |
 |---|---|---|---|---|
@@ -514,6 +501,8 @@ Use broker trading hours; do not assume every broker closes at the same time.
 | EnableDebugLog | bool | false |
 
 ## 25. Account & position management
+Available modes: Hedging Account · Netting Account · Auto Account Detection · EA-Only Position Management · Symbol-Based Management · All Positions Management.
+
 | Parameter | Type | Options | Working logic |
 |---|---|---|---|
 | AccountMode | ENUM | Hedging, Netting, Auto Detect | Position model |
@@ -544,14 +533,12 @@ Only broker-supported filling modes. On requote/rejection follow the retry polic
 margin and stops**; prevent duplicate orders during retries.
 
 ## 27. Advanced trading strategies
-Trend Following · Counter Trend · Mean Reversion · Momentum · Scalping · Swing · Breakout Retest · Reversal ·
-Continuation · Range · Volatility · Liquidity · Statistical · Arbitrage.
+Available modes: Trend Following · Counter Trend · Mean Reversion · Momentum Trading · Scalping · Swing Trading · Breakout Retest · Reversal Trading · Continuation Trading · Range Trading · Volatility Trading · Liquidity Trading · Statistical Trading · Arbitrage.
 Each needs its own explicit entry, exit and risk rules; **a dropdown label alone does not implement a strategy.**
 Arbitrage additionally needs multiple price feeds/venues and realistic execution assumptions.
 
 ## 28. Dashboard & Telegram alerts
-Dashboard · Balance · Equity · Daily Profit · Daily Loss · Floating Profit · Open Positions · Grid Levels · Entry Arrows ·
-SL/TP Lines · Trading Status · Telegram · Push · Sound · Debug Logs. Telegram needs a bot token and chat ID; store
+Available features: Trading Dashboard · Balance Display · Equity Display · Daily Profit · Daily Loss · Floating Profit · Open Positions · Grid Level Display · Entry Arrows · SL/TP Lines · Trading Status · Telegram Alerts · Push Notifications · Sound Alerts · Debug Logs. Telegram needs a bot token and chat ID; store
 them securely and never print them in logs or shared source.
 
 ## 29. Master input group structure
