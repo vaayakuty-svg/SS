@@ -1,6 +1,6 @@
 ---
 name: bot-vava
-description: Bot Vava (ബോട്ട് വാവ) - audit, fix, compile, optimize and re-test MetaTrader 5 Expert Advisors (.mq5/.mqh). Use when the user attaches or points to MQL5 EA files and asks to audit, debug, fix, compile, optimize, backtest, tune inputs or "make the EA profitable", or calls "Bot Vava" / "ബോട്ട് വാവ". Asks only test-setup questions (period, timeframe, test mode), never input-setting questions; patches code MetaEditor-style keeping the user's inputs and strategy; runs a compile -> optimize -> verify loop with metaeditor64/terminal64 scripts and never reports results it did not read from real logs.
+description: Bot Vava (ബോട്ട് വാവ) - audit, fix, compile, optimize and re-test MetaTrader 5 Expert Advisors (.mq5/.mqh). Use when the user attaches or points to MQL5 EA files and asks to audit, debug, fix, compile, optimize, backtest, tune inputs or "make the EA profitable", or calls "Bot Vava" / "ബോട്ട് വാവ". Asks only test-setup questions (period, timeframe, test mode), never input-setting questions; patches code MetaEditor-style keeping the user's inputs and strategy; runs a compile -> optimize -> verify loop with metaeditor64/terminal64 scripts and never reports results it did not read from real logs. Includes the full Universal XAUUSD EA Master Blueprint (30 sections: entry, SMC, MTF, news, execution, exits, lots, risk, grid, hedge, recovery, sessions, account) for blueprint compliance audits and for building or extending a universal modular EA on request.
 ---
 
 # Bot Vava (ബോട്ട് വാവ): MQL5 EA Auditor, Optimizer and Refiner
@@ -12,10 +12,12 @@ Priorities, in order: **truthful results → capital protection → correct code
 
 - The user's existing trading skills, core entry rules and `input` settings take precedence. This skill does not redesign
   the strategy, rename inputs or add new entry logic unless a rule below requires a fix.
-- Division of labour with `ea-parameter-blueprint` (if present): that skill builds blueprints and re-architects bots.
-  This skill audits, patches, compiles, optimizes and verifies **existing** code. If the user asks for a rewrite or a
-  new architecture, hand over to that skill. If both are active on the same request, this skill runs the
-  compile/test loop and that skill's design rules govern any new modules.
+- The user's **Universal EA Master Blueprint** is built into this skill (`references/universal-ea-blueprint.md`, all
+  30 sections with every mode, parameter, type, default, range, logic and the compliance checklist §31). It is the
+  standard for the blueprint audit (Step 3, part D) and for Blueprint mode (Step 3b).
+- Division of labour with `ea-parameter-blueprint` (if present): that skill writes generic parameter references and
+  re-architects bots in other styles. For anything that follows the user's Universal EA Master Blueprint, this skill
+  does the work itself (Blueprint mode). If both are active, this skill runs the compile/test loop.
 - All files this skill writes go into a work folder next to the EA: `<EA folder>/_audit/` (reports, .set, .ini, logs).
   Patched source keeps the original file name; the original is saved as `<name>.orig.mq5` before the first edit.
 
@@ -23,6 +25,9 @@ Priorities, in order: **truthful results → capital protection → correct code
 
 Activate when any of these is true:
 - The user calls the skill by name: "Bot Vava", "bot vava", "ബോട്ട് വാവ".
+- The user asks to build, extend or check an EA against the "Universal EA", "master blueprint" or any of its modules
+  (candle/breakout/pullback/indicator/SMC entry, MTF, news, execution, TP/SL/trailing/BE/partial, basket, lot modes,
+  risk, grid, grid lots, hedge, recovery, sessions, day filter, account management, dashboard/Telegram).
 - An `.mq5`, `.mqh`, `.set`, `.ini`, tester report (`.htm`, `.html`, `.xml`) or MetaEditor log is attached or referenced.
 - The user asks to audit, review, debug, fix, compile, optimize, backtest, forward-test, stress-test, tune or
   "make profitable" an EA.
@@ -84,7 +89,31 @@ total lots; no weekend handling; grid/martingale/recovery without a level cap, a
 averaging logic, compute the worst case: total lots and floating loss after a 3,000-point (gold) / 300-pip (FX)
 adverse move.
 
-Output an audit table: `# | Severity (Critical/High/Medium/Low) | File:line | Finding | Why it matters | Fix`.
+**D. Blueprint compliance:** run checklist §31 of `references/universal-ea-blueprint.md` (BP1–BP19) for every
+blueprint module the EA contains: real code per mode, disabled = inactive, module independence, no contradictory
+modes, units, closed-candle rule, lot/margin/stop/freeze validation, duplicate protection, risk on every add,
+hedging/netting, restart, errors, tester/optimization, costs, specification gaps, credentials, input structure.
+Compare each present module's modes, parameters, types and defaults with the blueprint tables and list mismatches.
+Modules the EA does not have are listed as ABSENT, not added (unless Blueprint mode is requested).
+
+Output an audit table: `# | Severity (Critical/High/Medium/Low) | File:line | Finding | Why it matters | Fix`,
+plus a blueprint coverage table: `Section | Module | Status (PASS/PARTIAL/FAIL/ABSENT) | Mismatches`.
+
+## 4b. Step 3b: Blueprint mode (only when the user asks to build or extend)
+
+Triggered by an explicit request such as "build the universal EA", "add the grid/hedge/SMC module", "make my EA follow
+the blueprint". Then, and only then, new modules may be added:
+1. Build from `references/universal-ea-blueprint.md`: the section's modes as an ENUM (English options), its parameters
+   with the blueprint's names (with `Inp` prefix), types, defaults and ranges, in the §29 input group order.
+2. Resolve every point the blueprint says must be defined (closed vs forming candles per module/TF, AND/OR/majority
+   indicator logic, SMC swing/invalidation/displacement/confirmation, SL fixed vs recalculated, timer start, basket P/L
+   composition, news handling of open positions, daily reset time and limit scope) and state each choice in comments.
+3. Meet every §30 requirement and rule; add conflict checks to `OnInit` (§30 "no contradictory modes").
+4. Keep the user's existing inputs and modules unchanged; new modules default to **disabled**, so existing behaviour does
+   not change until the user turns them on.
+5. Reuse `Experts/UniversalGoldEA/` code where it exists (reference implementation, §32), reconciling the listed
+   differences toward the blueprint.
+6. Then run the normal loop (compile → backtest each new mode alone → optimize → verify). Same no-fabrication rules.
 
 ## 5. Step 4: patch MetaEditor-style
 
@@ -198,6 +227,7 @@ Automation:
 
 | Path | Purpose |
 |---|---|
+| `references/universal-ea-blueprint.md` | The user's Universal EA Master Blueprint: all 30 sections, every mode and parameter (type, options, default, range, logic, behaviour, compatibility), compliance checklist BP1–BP19, reference-implementation notes. |
 | `references/audit-checklist.md` | Full audit checklist with MQL5 patterns to grep for. |
 | `references/patch-library.md` | Drop-in MetaEditor-style guardrail functions. |
 | `references/tester-ini-reference.md` | `terminal64.exe /config` `[Tester]` keys, `.set` format, report locations, CLI flags. |
