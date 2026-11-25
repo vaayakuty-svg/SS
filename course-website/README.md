@@ -14,4 +14,4 @@ A single-page, mobile-first website for selling the Malayalam Reselling Course (
 - `social`, `legal` — Instagram / YouTube / email, refund and terms links
 
 ## Sections
-Hero (video) · What You Will Learn (+ 28 modules) · Bonus · Founder · Income Potential · Proof of Work carousel · Real Results carousel · Student Feedback · What You Need · FAQ · Early Access Notice · Final CTA · Footer. White background, black text, green buttons only, floating WhatsApp button and sticky mobile buy bar.
+Animated pond hero (water light, swimming parcels/coins/bags, tap ripples, floating pads) · What You Will Learn (+ 28 modules) · Bonus · Founder · Income Potential · Proof of Work carousel · Real Results carousel · Student Feedback · What You Need · FAQ · Early Access Notice · Final CTA · Footer. White background, black text, green buttons only, floating WhatsApp button and sticky mobile buy bar.
