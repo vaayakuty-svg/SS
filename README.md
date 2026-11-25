@@ -39,6 +39,20 @@ A transparent ATR breakout scalper for gold on the 1-minute chart. Every rule is
 
 All values are inputs. Backtest in the Strategy Tester ("Every tick based on real ticks") and run on demo before going live.
 
+### `Experts/UniversalGoldEA/` — Universal modular XAUUSD EA
+
+A modular EA where every module is chosen independently in the MT5 Inputs tab (35 input groups, 407 inputs).
+
+- **Entry modules:** candle patterns (17), breakout (12), pullback (8), indicators (12 with cross/level/OBOS/trend/momentum/volatility logic), Smart Money Concepts (16 incl. sweep + CHOCH + OB/FVG), 14 strategy presets. Combine them with ALL / ANY / MAJORITY.
+- **Filters:** multi-timeframe (6 modes), sessions (9), day filter, news (MT5 calendar + manual times), volatility, spread and spread spikes, rollover, weekend close.
+- **Execution:** market / stop / limit / retest / hybrid; bar-open, bar-close, tick or timer timing; retries, filling-mode detection, stop and freeze level checks, margin checks.
+- **Exits:** 9 TP modes, 10 SL modes, 9 trailing modes, 6 break-even modes, partial TP1–TP3, time and signal exits, basket and equity exits.
+- **Sizing and risk:** 14 lot modes, daily loss and profit target, drawdown halt that survives restarts, exposure caps, cooldowns.
+- **Grid / hedge / recovery:** 15 grid modes, 8 spacing modes, 12 lot progressions, 10 hedge modes, 10 recovery modes, all capped. These modes can lose the whole account in one trend.
+
+Install: copy the whole `UniversalGoldEA` folder (with `Include/`) into `MQL5/Experts/` and compile `UniversalGoldEA.mq5` in MetaEditor.
+Full specification of every parameter: [`docs/UniversalGoldEA_Reference.md`](docs/UniversalGoldEA_Reference.md).
+
 ## Installation
 
 1. Copy the EA file to your MetaTrader 5 `Experts` folder
